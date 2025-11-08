@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text JSON Translation Format Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .config-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .config-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        textarea {
+            resize: vertical;
+            font-family: 'Consolas', 'Courier New', monospace;
+            min-height: 250px;
+        }
+
+        .direction-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .direction-btn {
+            padding: 18px 15px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            background: #e7f3ff;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .direction-btn:hover {
+            background: #cce5ff;
+        }
+
+        .direction-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .radio-group {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .file-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-input-group input[type="file"] {
+            flex: 1;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+            .direction-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text JSON Translation Format Converter</h1>
+
+        <!-- ARGS Section -->
+        <div class="config-section">
+            <div class="config-title">ARGUMENTS & CONFIGURATION</div>
+            
+            <div class="form-group">
+                <label>Conversion Direction:</label>
+                <div class="direction-buttons">
+                    <button type="button" class="direction-btn active" id="btnTextToJson">Text to JSON</button>
+                    <button type="button" class="direction-btn" id="btnJsonToText">JSON to Text</button>
+                    <button type="button" class="direction-btn" id="btnLayout">Layout</button>
+                    <button type="button" class="direction-btn" id="btnHtmlLayout">HTML Layout</button>
+                </div>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="direction" value="text-to-json" checked>
+                        Text to JSON
+                    </label>
+                    <label>
+                        <input type="radio" name="direction" value="json-to-text">
+                        JSON to Text
+                    </label>
+                    <label>
+                        <input type="radio" name="direction" value="layout">
+                        Layout
+                    </label>
+                    <label>
+                        <input type="radio" name="direction" value="html-layout">
+                        HTML Layout
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid-2col">
+                <div class="form-group">
+                    <label for="sourceId">Source ID (4 characters):</label>
+                    <input type="text" id="sourceId" maxlength="4" placeholder="e.g., BPDH">
+                </div>
+
+                <div class="form-group">
+                    <label for="documentTitle">Document Title:</label>
+                    <input type="text" id="documentTitle" placeholder="Auto-detected from input">
+                </div>
+
+                <div class="form-group">
+                    <label for="sourceLang">Source Language Code:</label>
+                    <select id="sourceLang">
+                        <option value="en" selected>en - English</option>
+                        <option value="vi">vi - Vietnamese</option>
+                        <option value="fr">fr - French</option>
+                        <option value="es">es - Spanish</option>
+                        <option value="de">de - German</option>
+                        <option value="zh">zh - Chinese</option>
+                        <option value="ja">ja - Japanese</option>
+                        <option value="ko">ko - Korean</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetLang">Target Language Code:</label>
+                    <select id="targetLang">
+                        <option value="vi" selected>vi - Vietnamese</option>
+                        <option value="en">en - English</option>
+                        <option value="fr">fr - French</option>
+                        <option value="es">es - Spanish</option>
+                        <option value="de">de - German</option>
+                        <option value="zh">zh - Chinese</option>
+                        <option value="ja">ja - Japanese</option>
+                        <option value="ko">ko - Korean</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="config-section">
+            <div class="config-title">INPUT</div>
+            
+            <div class="form-group">
+                <div class="file-input-group">
+                    <input type="file" id="fileInput" accept=".txt,.json">
+                    <button onclick="clearInput()">Clear</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="inputText">Or Paste Text Here:</label>
+                <textarea id="inputText" placeholder="Paste your text or JSON content here..." onpaste="handlePaste(event)"></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group">
+            <button onclick="processConversion()">Convert</button>
+            <button onclick="saveOutput()" id="saveBtn" disabled>Save Output</button>
+            <button onclick="resetApp()">Reset</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div class="status" id="statusMsg"></div>
+
+        <!-- Statistics -->
+        <div class="stats" id="statsContainer" style="display:none;">
+            <div class="stat-item">
+                <div class="stat-value" id="segmentCount">0</div>
+                <div class="stat-label">Segments</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="tokenCount">0</div>
+                <div class="stat-label">Total Tokens</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="commentCount">0</div>
+                <div class="stat-label">Comments</div>
+            </div>
+        </div>
+
+        <!-- Output Section -->
+        <div class="config-section" style="margin-top: 25px;">
+            <div class="config-title">OUTPUT</div>
+            <div class="form-group">
+                <textarea id="outputText" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --------------------CONSTANTS & CONFIGURATIONS
+        const APP_NAME = "Text JSON Translation Format Converter";
+        const OUTPUT_DESCRIPTION = "Text JSON Translation Format Converter";
+        const SEGMENT_PATTERN = /^\^(\d+)-(\d+)-(\d+)\s+(.*)$/;
+        const TRANSLATION_PATTERN = /<([^=]+)=([^>]+)>/;
+        const GENERAL_COMMENT_PATTERN = /#([^#]+)#/g;
+        const ISSUE_COMMENT_PATTERN = /\$([^$]+)\$/g;
+        const RATIONALE_COMMENT_PATTERN = /~([^~]+)~/g;
+        const UPDATED_AT_PATTERN = /!\{([^}]+)\}!/g;
+        const UPDATED_BY_ID_PATTERN = /%\{([^}]+)\}%/g;
+        const STATUS_PATTERN = /&\{([^}]+)\}&/g;
+        const STAGES_PATTERN = /\?\{([^}]+)\}\?/g;
+        const PUNCTUATION_PATTERN = /[.,;:!?()"\[\]{}]/g;
+
+        let currentOutput = null;
+        let currentOutputData = null;
+
+        // --------------------MAIN APPLICATION
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        
+        // Conversion direction button handlers
+        document.getElementById('btnTextToJson').addEventListener('click', () => {
+            document.querySelector('input[name="direction"][value="text-to-json"]').checked = true;
+            document.getElementById('btnTextToJson').classList.add('active');
+            document.getElementById('btnJsonToText').classList.remove('active');
+            document.getElementById('btnLayout').classList.remove('active');
+            document.getElementById('btnHtmlLayout').classList.remove('active');
+        });
+        
+        document.getElementById('btnJsonToText').addEventListener('click', () => {
+            document.querySelector('input[name="direction"][value="json-to-text"]').checked = true;
+            document.getElementById('btnJsonToText').classList.add('active');
+            document.getElementById('btnTextToJson').classList.remove('active');
+            document.getElementById('btnLayout').classList.remove('active');
+            document.getElementById('btnHtmlLayout').classList.remove('active');
+        });
+        
+        document.getElementById('btnLayout').addEventListener('click', () => {
+            document.querySelector('input[name="direction"][value="layout"]').checked = true;
+            document.getElementById('btnLayout').classList.add('active');
+            document.getElementById('btnTextToJson').classList.remove('active');
+            document.getElementById('btnJsonToText').classList.remove('active');
+            document.getElementById('btnHtmlLayout').classList.remove('active');
+        });
+        
+        document.getElementById('btnHtmlLayout').addEventListener('click', () => {
+            document.querySelector('input[name="direction"][value="html-layout"]').checked = true;
+            document.getElementById('btnHtmlLayout').classList.add('active');
+            document.getElementById('btnTextToJson').classList.remove('active');
+            document.getElementById('btnJsonToText').classList.remove('active');
+            document.getElementById('btnLayout').classList.remove('active');
+        });
+
+        function detectDocumentTitle(text, filename) {
+            // First try to extract from filename
+            if (filename) {
+                const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+                // Clean up common patterns
+                const cleaned = nameWithoutExt
+                    .replace(/[-_]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                if (cleaned && cleaned.length > 3 && cleaned.length < 100) {
+                    return cleaned;
+                }
+            }
+            
+            // Try to find title in text - look for first non-segment line
+            if (text) {
+                const lines = text.split('\n');
+                for (let line of lines) {
+                    const trimmed = line.trim();
+                    // Skip empty lines, segment lines, and very long lines
+                    if (trimmed && 
+                        !trimmed.match(SEGMENT_PATTERN) && 
+                        trimmed.length > 5 && 
+                        trimmed.length < 150 &&
+                        !trimmed.startsWith('---') &&
+                        !trimmed.startsWith('```')) {
+                        // This might be a title
+                        return trimmed;
+                    }
+                }
+            }
+            
+            return '';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                document.getElementById('inputText').value = content;
+                
+                // Auto-detect and populate fields if empty
+                const titleField = document.getElementById('documentTitle');
+                if (!titleField.value.trim()) {
+                    const detectedTitle = detectDocumentTitle(content, file.name);
+                    if (detectedTitle) {
+                        titleField.value = detectedTitle;
+                    }
+                }
+                
+                // Auto-detect source ID from filename if empty
+                const sourceIdField = document.getElementById('sourceId');
+                if (!sourceIdField.value.trim()) {
+                    const filenameBase = file.name.replace(/\.[^/.]+$/, "");
+                    // Try to extract 4-char code from filename
+                    const match = filenameBase.match(/\b([A-Z]{4})\b/);
+                    if (match) {
+                        sourceIdField.value = match[1];
+                    }
+                }
+                
+                showStatus('File loaded successfully', 'success');
+            };
+            reader.onerror = () => {
+                showStatus('Error reading file', 'error');
+            };
+            reader.readAsText(file);
+        }
+
+        function handlePaste(event) {
+            // Wait for paste to complete, then auto-detect
+            setTimeout(() => {
+                const text = document.getElementById('inputText').value;
+                const titleField = document.getElementById('documentTitle');
+                if (!titleField.value.trim() && text.trim()) {
+                    const detectedTitle = detectDocumentTitle(text, '');
+                    if (detectedTitle) {
+                        titleField.value = detectedTitle;
+                    }
+                }
+            }, 100);
+        }
+
+        function clearInput() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('fileInput').value = '';
+            // Don't clear document_title - user might want to keep it
+            showStatus('Input cleared', 'info');
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('statusMsg');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMsg').style.display = 'none';
+        }
+
+        function showProgress(percent, show = true) {
+            const container = document.getElementById('progressContainer');
+            const fill = document.getElementById('progressFill');
+            container.style.display = show ? 'block' : 'none';
+            fill.style.width = percent + '%';
+            fill.textContent = Math.round(percent) + '%';
+        }
+
+        function updateStats(segments, tokens, comments) {
+            document.getElementById('statsContainer').style.display = 'grid';
+            document.getElementById('segmentCount').textContent = segments;
+            document.getElementById('tokenCount').textContent = tokens;
+            document.getElementById('commentCount').textContent = comments;
+        }
+
+        function tokenizeText(text) {
+            return text.trim()
+                .replace(PUNCTUATION_PATTERN, ' ')
+                .split(/\s+/)
+                .filter(token => token.length > 0);
+        }
+
+        function extractComments(text, pattern) {
+            const comments = [];
+            let match;
+            const patternCopy = new RegExp(pattern.source, pattern.flags);
+            while ((match = patternCopy.exec(text)) !== null) {
+                comments.push(match[1].trim());
+            }
+            return comments;
+        }
+
+        function extractSegmentMeta(text) {
+            const meta = {
+                updated_at: "",
+                updated_by_id: "",
+                status: "",
+                stages: ""
+            };
+            
+            const updatedAtMatch = text.match(UPDATED_AT_PATTERN);
+            if (updatedAtMatch && updatedAtMatch[1]) {
+                meta.updated_at = updatedAtMatch[1].trim();
+            }
+            
+            const updatedByIdMatch = text.match(UPDATED_BY_ID_PATTERN);
+            if (updatedByIdMatch && updatedByIdMatch[1]) {
+                meta.updated_by_id = updatedByIdMatch[1].trim();
+            }
+            
+            const statusMatch = text.match(STATUS_PATTERN);
+            if (statusMatch && statusMatch[1]) {
+                meta.status = statusMatch[1].trim();
+            }
+            
+            const stagesMatch = text.match(STAGES_PATTERN);
+            if (stagesMatch && stagesMatch[1]) {
+                meta.stages = stagesMatch[1].trim();
+            }
+            
+            return meta;
+        }
+
+        function parseTextToJSON(text) {
+            const lines = text.split('\n');
+            const sourceId = document.getElementById('sourceId').value.trim();
+            const documentTitle = document.getElementById('documentTitle').value.trim();
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+
+            if (!sourceId || sourceId.length !== 4) {
+                throw new Error('Source ID must be exactly 4 characters');
+            }
+
+            const segments = [];
+            let totalTokens = 0;
+            let totalComments = 0;
+
+            lines.forEach((line, index) => {
+                const match = line.match(SEGMENT_PATTERN);
+                if (!match) return;
+
+                const [, pageNum, blockNum, segNum, content] = match;
+                const segmentId = `${pageNum}-${blockNum}-${segNum}`;
+
+                const translationMatch = content.match(TRANSLATION_PATTERN);
+                if (!translationMatch) return;
+
+                const sourceText = translationMatch[1].trim();
+                const targetText = translationMatch[2].trim();
+
+                const generalComments = extractComments(content, GENERAL_COMMENT_PATTERN);
+                const issueComments = extractComments(content, ISSUE_COMMENT_PATTERN);
+                const rationaleComments = extractComments(content, RATIONALE_COMMENT_PATTERN);
+                const segmentMeta = extractSegmentMeta(content);
+
+                totalComments += generalComments.length + issueComments.length + rationaleComments.length;
+
+                const sourceTokens = tokenizeText(sourceText);
+                const targetTokens = tokenizeText(targetText);
+                
+                // Set updated_at to current timestamp if not provided
+                const updatedAt = segmentMeta.updated_at || new Date().toISOString();
+
+                const sourceTokensList = sourceTokens.map((token, idx) => {
+                    const tokenId = `s${segmentId}-${idx + 1}`;
+                    return {
+                        token_id: tokenId,
+                        "word-form_text": token,
+                        pos: "",
+                        ner: "",
+                        lemma: "",
+                        lexeme_id: "",
+                        sense: ""
+                    };
+                });
+
+                const targetTokensList = targetTokens.map((token, idx) => {
+                    const tokenId = `t${segmentId}-${idx + 1}`;
+                    return {
+                        token_id: tokenId,
+                        "word-form_text": token,
+                        pos: "",
+                        ner: "",
+                        lemma: "",
+                        lexeme_id: "",
+                        sense: ""
+                    };
+                });
+
+                totalTokens += sourceTokens.length + targetTokens.length;
+
+                const segmentObj = {
+                    segment_id: segmentId,
+                    page_number: parseInt(pageNum),
+                    block_number: parseInt(blockNum),
+                    segment_number: parseInt(segNum),
+                    source_text: sourceText,
+                    source_tokens_list: sourceTokensList,
+                    target_text: targetText,
+                    target_tokens_list: targetTokensList,
+                    translation_mapping_list: [],
+                    comments: {
+                        general_comments: generalComments,
+                        rationale_comments: rationaleComments,
+                        issue_comments: issueComments
+                    }
+                };
+                
+                // Include segment_meta if at least one field has a value (updated_at is always set)
+                segmentObj.segment_meta = {
+                    updated_at: updatedAt,
+                    updated_by_id: segmentMeta.updated_by_id || "",
+                    status: segmentMeta.status || "",
+                    stages: segmentMeta.stages || ""
+                };
+                
+                segments.push(segmentObj);
+
+                showProgress((index / lines.length) * 100);
+            });
+
+            showProgress(100);
+
+            return {
+                output: {
+                    metadata: {
+                        source_id: sourceId,
+                        document_title: documentTitle,
+                        source_language_code: sourceLang,
+                        target_language_code: targetLang
+                    },
+                    translation_segments: segments
+                },
+                stats: {
+                    segments: segments.length,
+                    tokens: totalTokens,
+                    comments: totalComments
+                }
+            };
+        }
+
+        function parseJSONToText(jsonData) {
+            let data;
+            try {
+                data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+            } catch (e) {
+                throw new Error('Invalid JSON format');
+            }
+
+            const lines = [];
+            let totalTokens = 0;
+            let totalComments = 0;
+
+            if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                throw new Error('Invalid JSON structure: missing translation_segments array');
+            }
+            
+            // Auto-populate fields from JSON metadata if empty
+            if (data.metadata) {
+                const titleField = document.getElementById('documentTitle');
+                if (!titleField.value.trim() && data.metadata.document_title) {
+                    titleField.value = data.metadata.document_title;
+                }
+                
+                const sourceIdField = document.getElementById('sourceId');
+                if (!sourceIdField.value.trim() && data.metadata.source_id) {
+                    sourceIdField.value = data.metadata.source_id;
+                }
+                
+                if (data.metadata.source_language_code) {
+                    document.getElementById('sourceLang').value = data.metadata.source_language_code;
+                }
+                
+                if (data.metadata.target_language_code) {
+                    document.getElementById('targetLang').value = data.metadata.target_language_code;
+                }
+            }
+
+            // Generate YAML metadata header
+            let yamlHeader = '';
+            if (data.metadata) {
+                yamlHeader = '---\n';
+                yamlHeader += `source_id: "${data.metadata.source_id || ''}"\n`;
+                yamlHeader += `document_title: "${data.metadata.document_title || ''}"\n`;
+                yamlHeader += `source_language_code: "${data.metadata.source_language_code || ''}"\n`;
+                yamlHeader += `target_language_code: "${data.metadata.target_language_code || ''}"\n`;
+                yamlHeader += `created_at: "${new Date().toISOString()}"\n`;
+                yamlHeader += '---\n\n';
+            }
+
+            data.translation_segments.forEach((segment, index) => {
+                let line = `^${segment.segment_id} <${segment.source_text || ''} = ${segment.target_text || ''}>`;
+
+                if (segment.comments) {
+                    if (segment.comments.general_comments && segment.comments.general_comments.length > 0) {
+                        segment.comments.general_comments.forEach(comment => {
+                            line += ` #${comment}#`;
+                            totalComments++;
+                        });
+                    }
+                    if (segment.comments.issue_comments && segment.comments.issue_comments.length > 0) {
+                        segment.comments.issue_comments.forEach(comment => {
+                            line += ` $${comment}$`;
+                            totalComments++;
+                        });
+                    }
+                    if (segment.comments.rationale_comments && segment.comments.rationale_comments.length > 0) {
+                        segment.comments.rationale_comments.forEach(comment => {
+                            line += ` ~${comment}~`;
+                            totalComments++;
+                        });
+                    }
+                }
+                
+                // Add segment metadata if present (only if values exist, in order: updated_at, updated_by_id, status, stages)
+                if (segment.segment_meta) {
+                    if (segment.segment_meta.updated_at && segment.segment_meta.updated_at.trim()) {
+                        line += ` !{${segment.segment_meta.updated_at}}!`;
+                    }
+                    if (segment.segment_meta.updated_by_id && segment.segment_meta.updated_by_id.trim()) {
+                        line += ` %{${segment.segment_meta.updated_by_id}}%`;
+                    }
+                    if (segment.segment_meta.status && segment.segment_meta.status.trim()) {
+                        line += ` &{${segment.segment_meta.status}}&`;
+                    }
+                    if (segment.segment_meta.stages && segment.segment_meta.stages.trim()) {
+                        line += ` ?{${segment.segment_meta.stages}}?`;
+                    }
+                }
+
+                lines.push(line);
+
+                if (segment.source_tokens_list) totalTokens += segment.source_tokens_list.length;
+                if (segment.target_tokens_list) totalTokens += segment.target_tokens_list.length;
+
+                showProgress(((index + 1) / data.translation_segments.length) * 100);
+            });
+
+            showProgress(100);
+
+            return {
+                output: yamlHeader + lines.join('\n'),
+                stats: {
+                    segments: data.translation_segments.length,
+                    tokens: totalTokens,
+                    comments: totalComments
+                }
+            };
+        }
+
+        function truncateText(text, firstWords = 5, lastWords = 5) {
+            const words = text.trim().split(/\s+/);
+            if (words.length <= firstWords + lastWords) {
+                return text;
+            }
+            const firstPart = words.slice(0, firstWords).join(' ');
+            const lastPart = words.slice(-lastWords).join(' ');
+            return `${firstPart} ... ${lastPart}`;
+        }
+
+        function parseToLayout(inputText) {
+            let data;
+            
+            // Try to parse as JSON first
+            try {
+                data = JSON.parse(inputText);
+            } catch (e) {
+                // If not JSON, parse as text format
+                const textResult = parseTextToJSON(inputText);
+                data = textResult.output;
+            }
+
+            if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                throw new Error('Invalid data structure: missing translation_segments array');
+            }
+            
+            // Auto-populate fields from metadata if empty
+            if (data.metadata) {
+                const titleField = document.getElementById('documentTitle');
+                if (!titleField.value.trim() && data.metadata.document_title) {
+                    titleField.value = data.metadata.document_title;
+                }
+                
+                const sourceIdField = document.getElementById('sourceId');
+                if (!sourceIdField.value.trim() && data.metadata.source_id) {
+                    sourceIdField.value = data.metadata.source_id;
+                }
+                
+                if (data.metadata.source_language_code) {
+                    document.getElementById('sourceLang').value = data.metadata.source_language_code;
+                }
+                
+                if (data.metadata.target_language_code) {
+                    document.getElementById('targetLang').value = data.metadata.target_language_code;
+                }
+            }
+
+            // Generate YAML metadata header
+            let yamlHeader = '';
+            if (data.metadata) {
+                yamlHeader = '---\n';
+                yamlHeader += `source_id: "${data.metadata.source_id || ''}"\n`;
+                yamlHeader += `document_title: "${data.metadata.document_title || ''}"\n`;
+                yamlHeader += `source_language_code: "${data.metadata.source_language_code || ''}"\n`;
+                yamlHeader += `target_language_code: "${data.metadata.target_language_code || ''}"\n`;
+                yamlHeader += `created_at: "${new Date().toISOString()}"\n`;
+                yamlHeader += `format: "layout"\n`;
+                yamlHeader += '---\n\n';
+            }
+
+            // Group segments by page and block
+            const pageMap = {};
+            
+            data.translation_segments.forEach(segment => {
+                const pageNum = segment.page_number;
+                const blockNum = segment.block_number;
+                
+                if (!pageMap[pageNum]) {
+                    pageMap[pageNum] = {};
+                }
+                
+                if (!pageMap[pageNum][blockNum]) {
+                    pageMap[pageNum][blockNum] = [];
+                }
+                
+                pageMap[pageNum][blockNum].push({
+                    source_text: segment.source_text || '',
+                    target_text: segment.target_text || ''
+                });
+            });
+
+            // Generate layout output
+            const lines = [];
+            const sortedPages = Object.keys(pageMap).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            sortedPages.forEach(pageNum => {
+                lines.push(`>>>>>>>>>>[Page ${pageNum}]<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<`);
+                lines.push('');
+                
+                const blocks = pageMap[pageNum];
+                const sortedBlocks = Object.keys(blocks).sort((a, b) => parseInt(a) - parseInt(b));
+                
+                sortedBlocks.forEach(blockNum => {
+                    const segments = blocks[blockNum];
+                    
+                    // Concatenate all source texts
+                    const sourceTexts = segments.map(seg => seg.source_text).filter(text => text.trim()).join(' ');
+                    
+                    // Concatenate all target texts
+                    const targetTexts = segments.map(seg => seg.target_text).filter(text => text.trim()).join(' ');
+                    
+                    // Add Page/Block line with truncated source text if source text exists
+                    if (sourceTexts) {
+                        const truncatedSource = truncateText(sourceTexts, 5, 5);
+                        lines.push(`\n[P.${pageNum} B.${blockNum}]----------<${truncatedSource}>`);
+                        lines.push('');
+                    }
+                    
+                    // Add target text as paragraph
+                    if (targetTexts) {
+                        lines.push(targetTexts);
+                        lines.push('');
+                    }
+                });
+            });
+
+            return {
+                output: yamlHeader + lines.join('\n'),
+                stats: {
+                    segments: data.translation_segments.length,
+                    tokens: 0,
+                    comments: 0
+                }
+            };
+        }
+
+        function escapeHtmlForOutput(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function parseToHtmlLayout(inputText) {
+            let data;
+            
+            // Try to parse as JSON first
+            try {
+                data = JSON.parse(inputText);
+            } catch (e) {
+                // If not JSON, parse as text format
+                const textResult = parseTextToJSON(inputText);
+                data = textResult.output;
+            }
+
+            if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                throw new Error('Invalid data structure: missing translation_segments array');
+            }
+            
+            // Auto-populate fields from metadata if empty
+            if (data.metadata) {
+                const titleField = document.getElementById('documentTitle');
+                if (!titleField.value.trim() && data.metadata.document_title) {
+                    titleField.value = data.metadata.document_title;
+                }
+                
+                const sourceIdField = document.getElementById('sourceId');
+                if (!sourceIdField.value.trim() && data.metadata.source_id) {
+                    sourceIdField.value = data.metadata.source_id;
+                }
+                
+                if (data.metadata.source_language_code) {
+                    document.getElementById('sourceLang').value = data.metadata.source_language_code;
+                }
+                
+                if (data.metadata.target_language_code) {
+                    document.getElementById('targetLang').value = data.metadata.target_language_code;
+                }
+            }
+
+            // Group segments by page and block
+            const pageMap = {};
+            
+            data.translation_segments.forEach(segment => {
+                const pageNum = segment.page_number;
+                const blockNum = segment.block_number;
+                
+                if (!pageMap[pageNum]) {
+                    pageMap[pageNum] = {};
+                }
+                
+                if (!pageMap[pageNum][blockNum]) {
+                    pageMap[pageNum][blockNum] = [];
+                }
+                
+                pageMap[pageNum][blockNum].push({
+                    source_text: segment.source_text || '',
+                    target_text: segment.target_text || ''
+                });
+            });
+
+            // Generate HTML
+            const pages = Object.keys(pageMap).sort((a, b) => parseInt(a) - parseInt(b));
+            const pagesData = pages.map(pageNum => {
+                const blocks = pageMap[pageNum];
+                const sortedBlocks = Object.keys(blocks).sort((a, b) => parseInt(a) - parseInt(b));
+                
+                const blocksData = sortedBlocks.map(blockNum => {
+                    const segments = blocks[blockNum];
+                    const sourceTexts = segments.map(seg => seg.source_text).filter(text => text.trim()).join(' ');
+                    const targetTexts = segments.map(seg => seg.target_text).filter(text => text.trim()).join(' ');
+                    return { blockNum, sourceTexts, targetTexts };
+                });
+                
+                return { pageNum: parseInt(pageNum), blocks: blocksData };
+            });
+
+            const metadata = data.metadata || {};
+            
+            // Pre-calculate values for the generated HTML
+            const totalPagesValue = pagesData.length;
+            const pagesArrayValue = pagesData.map(p => p.pageNum).join(',');
+            
+            // Generate pages HTML
+            const pagesHtml = pagesData.map((page, idx) => {
+                const pageClass = idx === 0 ? 'page active' : 'page';
+                const pageId = 'page' + page.pageNum;
+                const blocksHtml = page.blocks.map(block => {
+                    const sourceId = 'source-' + page.pageNum + '-' + block.blockNum;
+                    const targetId = 'target-' + page.pageNum + '-' + block.blockNum;
+                    const sourceEscaped = escapeHtmlForOutput(block.sourceTexts);
+                    const targetEscaped = escapeHtmlForOutput(block.targetTexts);
+                    const sourceOnclick = 'copyText(&quot;' + sourceId + '&quot;)';
+                    const targetOnclick = 'copyText(&quot;' + targetId + '&quot;)';
+                    return '<tr><td class="source"><div class="block-header">Page ' + page.pageNum + ' Block ' + block.blockNum + '</div><button class="copy-btn" onclick="' + sourceOnclick + '">Copy</button><div class="text-content" id="' + sourceId + '">' + sourceEscaped + '</div></td><td class="target"><div class="block-header">Page ' + page.pageNum + ' Block ' + block.blockNum + '</div><button class="copy-btn copy-btn-target" onclick="' + targetOnclick + '">Copy</button><div class="text-content" id="' + targetId + '">' + targetEscaped + '</div></td></tr>';
+                }).join('');
+                return '<div class="' + pageClass + '" id="' + pageId + '"><table>' + blocksHtml + '</table></div>';
+            }).join('');
+            
+            const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtmlForOutput(metadata.document_title || 'Translation Layout')}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; background: #f5f5f5; }
+        .header { background: #fff; border-bottom: 1px solid #ddd; padding: 12px 16px; font-size: 13px; color: #666; }
+        .header div { margin: 4px 0; }
+        .nav { background: #fff; border-bottom: 1px solid #ddd; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+        .nav button { padding: 6px 14px; font-size: 14px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; }
+        .nav button:hover { background: #f0f0f0; }
+        .nav input { width: 60px; padding: 6px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        .nav span { font-size: 14px; color: #666; }
+        .content { max-width: 100%; padding: 16px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        tr { border-bottom: 1px solid #eee; }
+        td { padding: 16px; vertical-align: top; width: 50%; }
+        .source { border-right: 1px solid #eee; background: #fafafa; }
+        .target { background: #fff; }
+        .block-header { font-size: 12px; color: #999; margin-bottom: 8px; }
+        .text-content { font-size: 15px; line-height: 1.7; color: #333; user-select: text; }
+        .copy-btn { padding: 4px 10px; font-size: 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; float: right; margin-top: -2px; }
+        .copy-btn:hover { background: #e0e0e0; }
+        .copy-btn-target { background: #007bff; color: #fff; border-color: #0056b3; }
+        .copy-btn-target:hover { background: #0056b3; }
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div><strong>Source ID:</strong> ${escapeHtmlForOutput(metadata.source_id || '')}</div>
+        <div><strong>Document Title:</strong> ${escapeHtmlForOutput(metadata.document_title || '')}</div>
+        <div><strong>Languages:</strong> ${escapeHtmlForOutput(metadata.source_language_code || '')} → ${escapeHtmlForOutput(metadata.target_language_code || '')}</div>
+        <div><strong>Created At:</strong> ${escapeHtmlForOutput(new Date().toISOString())}</div>
+    </div>
+    <div class="nav">
+        <button onclick="prevPage()">← Prev</button>
+        <button onclick="nextPage()">Next →</button>
+        <span>Page</span>
+        <input type="number" id="pageInput" min="1" max="${totalPagesValue}" value="1" onchange="goToPage(parseInt(this.value))">
+        <span>of ${totalPagesValue}</span>
+    </div>
+    <div class="content">
+        ${pagesHtml}
+    </div>
+    <script>
+        let currentPage = 1;
+        const totalPages = ${totalPagesValue};
+        const pages = [${pagesArrayValue}];
+        
+        function showPage(pageIndex) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const pageNum = pages[pageIndex - 1];
+            const page = document.getElementById('page' + pageNum);
+            if (page) {
+                page.classList.add('active');
+                document.getElementById('pageInput').value = pageIndex;
+            }
+        }
+        
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        }
+        
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        }
+        
+        function goToPage(pageNum) {
+            if (pageNum >= 1 && pageNum <= totalPages) {
+                currentPage = pageNum;
+                showPage(currentPage);
+            }
+        }
+        
+        function copyText(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const text = el.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = window.event ? window.event.target : null;
+                if (btn) {
+                    const original = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = original, 1000);
+                }
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            });
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'ArrowRight') nextPage();
+        });
+        
+        // Initialize first page
+        showPage(currentPage);
+    <\/script>
+</body>
+</html>`;
+
+            return {
+                output: htmlContent,
+                stats: {
+                    segments: data.translation_segments.length,
+                    tokens: 0,
+                    comments: 0
+                }
+            };
+        }
+
+        function processConversion() {
+            hideStatus();
+            showProgress(0, true);
+
+            const direction = document.querySelector('input[name="direction"]:checked').value;
+            const inputText = document.getElementById('inputText').value.trim();
+
+            if (!inputText) {
+                showStatus('Please provide input text or load a file', 'error');
+                showProgress(0, false);
+                return;
+            }
+
+            try {
+                let result;
+
+                if (direction === 'text-to-json') {
+                    result = parseTextToJSON(inputText);
+                    currentOutput = JSON.stringify(result.output, null, 2);
+                } else if (direction === 'json-to-text') {
+                    result = parseJSONToText(inputText);
+                    currentOutput = result.output;
+                } else if (direction === 'layout') {
+                    result = parseToLayout(inputText);
+                    currentOutput = result.output;
+                } else if (direction === 'html-layout') {
+                    result = parseToHtmlLayout(inputText);
+                    currentOutput = result.output;
+                }
+
+                currentOutputData = result;
+                document.getElementById('outputText').value = currentOutput;
+                updateStats(result.stats.segments, result.stats.tokens, result.stats.comments);
+                document.getElementById('saveBtn').disabled = false;
+                showStatus(`Conversion completed successfully! ${result.stats.segments} segments processed.`, 'success');
+                
+                setTimeout(() => showProgress(0, false), 1000);
+
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                showProgress(0, false);
+                console.error(error);
+            }
+        }
+
+        function getTimestamp() {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            return { short: `${yy}${mm}${dd}`, long: `${yy}${mm}${dd}${hh}${min}` };
+        }
+
+        async function saveOutput() {
+            if (!currentOutput || !currentOutputData) {
+                showStatus('No output to save', 'error');
+                return;
+            }
+
+            const direction = document.querySelector('input[name="direction"]:checked').value;
+            const timestamp = getTimestamp();
+            const sourceId = document.getElementById('sourceId').value.trim() || 'UNKN';
+            const documentTitle = document.getElementById('documentTitle').value.trim() || 'Untitled';
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            
+            // Determine format name
+            let formatName = 'json';
+            if (direction === 'json-to-text') {
+                formatName = 'text';
+            } else if (direction === 'layout') {
+                formatName = 'layout';
+            } else if (direction === 'html-layout') {
+                formatName = 'html-layout';
+            }
+            
+            // New output folder name format: {yymmdd} - {source_id} {document_title} - {source_language_code}-{target_language_code} - {format}
+            const folderName = `${timestamp.short} - ${sourceId} ${documentTitle} - ${sourceLang}-${targetLang} - ${formatName}`;
+            // Output file name follows same format as folder
+            const fileExtension = formatName === 'json' ? 'json' : (formatName === 'html-layout' ? 'html' : 'txt');
+            const outputFileName = `${timestamp.short} - ${sourceId} ${documentTitle} - ${sourceLang}-${targetLang} - ${formatName}.${fileExtension}`;
+
+            const summaryData = {
+                app_name: APP_NAME,
+                conversion_direction: direction,
+                timestamp: timestamp.long,
+                output_folder: folderName,
+                statistics: currentOutputData.stats,
+                source_id: sourceId,
+                document_title: documentTitle,
+                source_language: sourceLang,
+                target_language: targetLang
+            };
+
+            if ('showDirectoryPicker' in window) {
+                try {
+                    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    const folderHandle = await dirHandle.getDirectoryHandle(folderName, { create: true });
+                    
+                    const outputFileHandle = await folderHandle.getFileHandle(outputFileName, { create: true });
+                    const outputWritable = await outputFileHandle.createWritable();
+                    await outputWritable.write(currentOutput);
+                    await outputWritable.close();
+
+                    const summaryFileHandle = await folderHandle.getFileHandle('run_summary.json', { create: true });
+                    const summaryWritable = await summaryFileHandle.createWritable();
+                    await summaryWritable.write(JSON.stringify(summaryData, null, 2));
+                    await summaryWritable.close();
+
+                    showStatus(`Files saved successfully to folder: ${folderName}`, 'success');
+
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        showStatus('Save cancelled by user', 'info');
+                    } else {
+                        console.error(error);
+                        fallbackSave(outputFileName, folderName, summaryData);
+                    }
+                }
+            } else {
+                fallbackSave(outputFileName, folderName, summaryData);
+            }
+        }
+
+        function fallbackSave(outputFileName, folderName, summaryData) {
+            showStatus(`Please create folder "${folderName}" and save these files into it:`, 'info');
+            
+            const mimeType = outputFileName.endsWith('.html') ? 'text/html' : (outputFileName.endsWith('.json') ? 'application/json' : 'text/plain');
+            downloadFile(currentOutput, outputFileName, mimeType);
+            
+            setTimeout(() => {
+                downloadFile(JSON.stringify(summaryData, null, 2), 'run_summary.json', 'application/json');
+            }, 500);
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function resetApp() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('documentTitle').value = '';
+            document.getElementById('saveBtn').disabled = true;
+            document.getElementById('statsContainer').style.display = 'none';
+            currentOutput = null;
+            currentOutputData = null;
+            hideStatus();
+            showProgress(0, false);
+        }
+    </script>
+</body>
+</html>
+
