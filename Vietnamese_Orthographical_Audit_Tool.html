@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Vietnamese Orthographical Audit Tool</title>
+   <style>
+      * {
+         margin: 0;
+         padding: 0;
+         box-sizing: border-box;
+      }
+
+      body {
+         font-family: 'Segoe UI', system-ui, sans-serif;
+         background: #fff;
+         color: #222;
+         font-size: 14px;
+         line-height: 1.5;
+      }
+
+      .container {
+         max-width: 1200px;
+         margin: 0 auto;
+         padding: 16px;
+      }
+
+      h1 {
+         font-size: 18px;
+         font-weight: 600;
+         margin-bottom: 4px;
+      }
+
+      .subtitle {
+         color: #666;
+         font-size: 12px;
+         margin-bottom: 16px;
+      }
+
+      .section {
+         border: 1px solid #e0e0e0;
+         border-radius: 6px;
+         padding: 12px;
+         margin-bottom: 12px;
+      }
+
+      .section-title {
+         font-size: 11px;
+         font-weight: 600;
+         text-transform: uppercase;
+         color: #888;
+         margin-bottom: 8px;
+      }
+
+      .row {
+         display: flex;
+         gap: 12px;
+         flex-wrap: wrap;
+      }
+
+      .col {
+         flex: 1;
+         min-width: 150px;
+      }
+
+      label {
+         display: block;
+         font-size: 12px;
+         color: #555;
+         margin-bottom: 3px;
+      }
+
+      input,
+      select,
+      textarea {
+         width: 100%;
+         padding: 6px 8px;
+         border: 1px solid #ddd;
+         border-radius: 4px;
+         font-size: 13px;
+         font-family: inherit;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+         outline: none;
+         border-color: #0066cc;
+      }
+
+      textarea {
+         font-family: 'Consolas', monospace;
+         font-size: 12px;
+         min-height: 120px;
+         resize: vertical;
+      }
+
+      .check-grid {
+         display: flex;
+         flex-wrap: wrap;
+         gap: 6px;
+      }
+
+      .check-item {
+         display: flex;
+         align-items: center;
+         gap: 4px;
+         font-size: 12px;
+         background: #f5f5f5;
+         padding: 4px 8px;
+         border-radius: 4px;
+         cursor: pointer;
+      }
+
+      .check-item:hover {
+         background: #eee;
+      }
+
+      .check-item input {
+         width: auto;
+         margin: 0;
+      }
+
+      .btn {
+         padding: 6px 14px;
+         font-size: 12px;
+         font-weight: 500;
+         border: none;
+         border-radius: 4px;
+         cursor: pointer;
+      }
+
+      .btn-primary {
+         background: #0066cc;
+         color: #fff;
+      }
+
+      .btn-primary:hover {
+         background: #0055aa;
+      }
+
+      .btn-success {
+         background: #28a745;
+         color: #fff;
+      }
+
+      .btn-success:hover {
+         background: #218838;
+      }
+
+      .btn-secondary {
+         background: #f0f0f0;
+         color: #333;
+         border: 1px solid #ddd;
+      }
+
+      .btn-secondary:hover {
+         background: #e5e5e5;
+      }
+
+      .btn:disabled {
+         opacity: 0.5;
+         cursor: not-allowed;
+      }
+
+      .btn-group {
+         display: flex;
+         gap: 8px;
+         margin-top: 10px;
+      }
+
+      .stats-row {
+         display: flex;
+         gap: 16px;
+         margin-bottom: 12px;
+      }
+
+      .stat {
+         text-align: center;
+      }
+
+      .stat-val {
+         font-size: 20px;
+         font-weight: 700;
+         color: #0066cc;
+      }
+
+      .stat-lbl {
+         font-size: 10px;
+         color: #888;
+         text-transform: uppercase;
+      }
+
+      .report-table {
+         width: 100%;
+         border-collapse: collapse;
+         font-size: 12px;
+      }
+
+      .report-table th {
+         background: #f5f5f5;
+         padding: 8px;
+         text-align: left;
+         font-weight: 600;
+         font-size: 11px;
+         text-transform: uppercase;
+         color: #666;
+         border-bottom: 2px solid #ddd;
+         cursor: pointer;
+         user-select: none;
+         position: sticky;
+         top: 0;
+         z-index: 10;
+         padding-right: 20px;
+         box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .report-table th:hover {
+         background: #e8e8e8;
+      }
+
+      .report-table th.sortable::after {
+         content: ' ↕';
+         position: absolute;
+         right: 6px;
+         font-size: 10px;
+         color: #999;
+      }
+
+      .report-table th.sort-asc::after {
+         content: ' ↑';
+         color: #0066cc;
+      }
+
+      .report-table th.sort-desc::after {
+         content: ' ↓';
+         color: #0066cc;
+      }
+
+      .report-table td {
+         padding: 8px;
+         border-bottom: 1px solid #eee;
+         vertical-align: top;
+      }
+
+      .report-table tr:hover td {
+         background: #fafafa;
+      }
+
+      .table-wrap {
+         max-height: 350px;
+         overflow-y: auto;
+         border: 1px solid #e0e0e0;
+         border-radius: 4px;
+      }
+
+      .issue-badge {
+         display: inline-block;
+         padding: 2px 8px;
+         border-radius: 10px;
+         font-size: 10px;
+         font-weight: 500;
+      }
+
+      .issue-badge.error {
+         background: #ffebee;
+         color: #c62828;
+      }
+
+      .issue-badge.warning {
+         background: #fff8e1;
+         color: #f57c00;
+      }
+
+      .issue-badge.info {
+         background: #e3f2fd;
+         color: #1565c0;
+      }
+
+      /* Color highlighting for issues */
+      .hl-error {
+         background: #ff6b6b;
+         color: #fff;
+         padding: 1px 3px;
+         border-radius: 2px;
+      }
+
+      .hl-fix {
+         background: #51cf66;
+         color: #fff;
+         padding: 1px 3px;
+         border-radius: 2px;
+      }
+
+      .hl-info {
+         background: #339af0;
+         color: #fff;
+         padding: 1px 3px;
+         border-radius: 2px;
+      }
+
+      .mono {
+         font-family: 'Consolas', monospace;
+         font-size: 12px;
+      }
+
+      .status {
+         padding: 8px 12px;
+         border-radius: 4px;
+         font-size: 12px;
+         margin-top: 10px;
+         display: none;
+      }
+
+      .status.success {
+         display: block;
+         background: #e8f5e9;
+         color: #2e7d32;
+         border: 1px solid #a5d6a7;
+      }
+
+      .status.error {
+         display: block;
+         background: #ffebee;
+         color: #c62828;
+         border: 1px solid #ef9a9a;
+      }
+
+      .status.info {
+         display: block;
+         background: #e3f2fd;
+         color: #1565c0;
+         border: 1px solid #90caf9;
+      }
+
+      .hidden {
+         display: none !important;
+      }
+
+      .save-info {
+         font-size: 11px;
+         color: #666;
+         margin-bottom: 8px;
+      }
+
+      .save-info strong {
+         color: #333;
+      }
+
+      .select-row {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         margin-bottom: 8px;
+      }
+
+      .progress {
+         height: 4px;
+         background: #e0e0e0;
+         border-radius: 2px;
+         margin: 8px 0;
+         display: none;
+      }
+
+      .progress-fill {
+         height: 100%;
+         background: #0066cc;
+         border-radius: 2px;
+         transition: width 0.2s;
+      }
+   </style>
+</head>
+
+<body>
+   <div class="container">
+      <h1>Vietnamese Orthographical Audit Tool</h1>
+      <p class="subtitle">Detect and fix spelling, formatting, and orthographical issues</p>
+
+      <!-- Config -->
+      <div class="section">
+         <div class="section-title">Configuration</div>
+         <div class="row">
+            <div class="col"><label>Source ID</label><input type="text" id="sourceId" maxlength="4"
+                  placeholder="e.g., BPDH"></div>
+            <div class="col"><label>Document Title</label><input type="text" id="documentTitle"
+                  placeholder="Auto-detected"></div>
+            <div class="col"><label>Translation Stage</label><select id="translationStage"></select></div>
+            <div class="col"><label>Orthography Style</label>
+               <select id="selOrthography">
+                  <option value="none">Ignore</option>
+                  <option value="new" selected>Enforce New (Nucleus Tone)</option>
+                  <option value="old">Enforce Old (Medial Tone)</option>
+               </select>
+            </div>
+         </div>
+      </div>
+
+      <!-- Checks -->
+      <div class="section">
+         <div class="section-title">Additional Checks (Optional)</div>
+         <div class="check-grid">
+            <label class="check-item"><input type="checkbox" id="chkBasicCleanup"><span>Basic Cleanup (spaces,
+                  punctuation, unicode)</span></label>
+            <label class="check-item"><input type="checkbox" id="chkSyllable"><span>Syllable Validation</span></label>
+         </div>
+      </div>
+
+      <!-- Input -->
+      <div class="section">
+         <div class="section-title">Input</div>
+         <div class="row" style="margin-bottom:8px;">
+            <input type="file" id="fileInput" accept=".txt,.json" style="flex:1;">
+            <button class="btn btn-secondary" onclick="clearInput()">Clear</button>
+         </div>
+         <textarea id="inputText" placeholder="Paste text here: ^page-block-seg <source = target>"></textarea>
+         <div class="btn-group">
+            <button class="btn btn-primary" onclick="runAudit()">🔍 Run Audit</button>
+            <button class="btn btn-secondary" onclick="resetApp()">Reset</button>
+         </div>
+         <div class="progress" id="progress">
+            <div class="progress-fill" id="progressFill"></div>
+         </div>
+         <div id="status" class="status"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="section hidden" id="statsSection">
+         <div class="stats-row">
+            <div class="stat">
+               <div class="stat-val" id="statSegs">0</div>
+               <div class="stat-lbl">Segments</div>
+            </div>
+            <div class="stat">
+               <div class="stat-val" id="statIssues">0</div>
+               <div class="stat-lbl">Issues</div>
+            </div>
+            <div class="stat">
+               <div class="stat-val" id="statFixed">0</div>
+               <div class="stat-lbl">Fixed</div>
+            </div>
+            <div class="stat">
+               <div class="stat-val" id="statPending">0</div>
+               <div class="stat-lbl">Pending</div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Report -->
+      <div class="section hidden" id="reportSection">
+         <div class="section-title">Audit Report</div>
+         <div class="select-row">
+            <label class="check-item" style="background:transparent;"><input type="checkbox" id="selectAll"
+                  onchange="toggleSelectAll()"><span>Select All</span></label>
+            <button class="btn btn-success" onclick="applySelected()">✓ Apply Selected</button>
+            <button class="btn btn-secondary" id="btnUndo" onclick="undoAction()" disabled>↩ Undo</button>
+            <button class="btn btn-secondary" id="btnRedo" onclick="redoAction()" disabled>↪ Redo</button>
+            <button class="btn btn-primary" onclick="reAudit()" style="margin-left:auto;">🔄 Re-audit</button>
+         </div>
+         <div class="table-wrap">
+            <table class="report-table">
+               <thead>
+                  <tr>
+                     <th width="30" class="sortable" onclick="sortTable('checkbox')">✓</th>
+                     <th width="70" class="sortable" onclick="sortTable('segment')">Segment</th>
+                     <th width="70" class="sortable" onclick="sortTable('position')">Position</th>
+                     <th width="110" class="sortable" onclick="sortTable('type')">Type</th>
+                     <th class="sortable" onclick="sortTable('context')">Context</th>
+                     <th class="sortable" onclick="sortTable('fix')">Fix</th>
+                  </tr>
+               </thead>
+               <tbody id="reportBody"></tbody>
+            </table>
+         </div>
+      </div>
+
+      <!-- Output -->
+      <div class="section hidden" id="outputSection">
+         <div class="section-title">Output</div>
+         <textarea id="outputText" readonly style="min-height:100px;"></textarea>
+         <div class="save-info" style="margin-top:8px;">
+            <strong>Folder:</strong> <span id="folderName" class="mono">—</span>
+         </div>
+         <div class="btn-group">
+            <button class="btn btn-primary" onclick="saveAllOutputs()">💾 Save All</button>
+            <button class="btn btn-secondary" onclick="downloadFormat('json')">JSON</button>
+            <button class="btn btn-secondary" onclick="downloadFormat('text')">Text</button>
+            <button class="btn btn-secondary" onclick="downloadFormat('layout')">Layout</button>
+            <button class="btn btn-secondary" onclick="downloadFormat('html')">HTML</button>
+            <button class="btn btn-secondary" onclick="downloadFormat('report')">Report</button>
+         </div>
+      </div>
+   </div>
+
+   <script>
+      const SEGMENT_PATTERN = /^\^(\d+)-(\d+)-(\d+)\s+(.*)$/;
+      const STAGES = ['00 – Pre-Translation', '01 – First Pass', '02 – First Draft Review', '03 – Context Revision', '04 – Draft Review', '05 – Target Revision', '06 – Third Draft Review', '07 – Indexing', '08 – Copy Editing', '09 – Final Draft Review', '10 – Press Revision', '11 – Final Pass', '12 – Press Version'];
+      const CYRILLIC_MAP = { 'А': 'A', 'В': 'B', 'С': 'C', 'Е': 'E', 'Н': 'H', 'І': 'I', 'К': 'K', 'М': 'M', 'О': 'O', 'Р': 'P', 'Т': 'T', 'Х': 'X', 'а': 'a', 'с': 'c', 'е': 'e', 'і': 'i', 'о': 'o', 'р': 'p', 'х': 'x', 'у': 'y', 'Б': 'B', 'Г': 'G' };
+
+      // ========== VIETNAMESE SYLLABLE ORTHOGRAPHY DICTIONARY ==========
+      // Complete set of valid Vietnamese syllables from orthographic rules generator
+      // Source: PYTHON - Complete Vietnamese Syllabary (13,350 syllables)
+
+      const VN_VALID_SYLLABLES = new Set();
+      let syllabaryLoaded = false;
+
+      // Vietnamese syllables will be loaded from external JSON file or embedded
+      // For robustness, we embed a compressed version directly
+
+      // Valid Vietnamese characters set
+      const VN_CHARS = new Set('aăâbcdđeêghiklmnoôơpqrstuưvxyàằầèềìòồờùừỳáắấéếíóốớúứýảẳẩẻểỉỏổởủửỷãẵẫẽễĩõỗỡũữỹạặậẹệịọộợụựỵ'.split(''));
+
+      // Improved: Check if a word looks like a foreign/English word based on characters
+      function isForeignWord(word) {
+         if (!word || word.length === 0) return false;
+         const lower = word.toLowerCase();
+         // Check for characters that don't exist in Vietnamese alphabet (f, j, w, z)
+         // Note: 'q' is only valid if followed by 'u'
+         if (/[fjwz]/.test(lower)) return true;
+
+         // Check for 'q' not followed by 'u'
+         if (lower.includes('q') && !lower.includes('qu')) return true;
+
+         // Check for non-Vietnamese consonant clusters at start (e.g., str, pl, br, cl)
+         // Vietnamese only allows: th, ch, nh, ph, kh, gh, ng, ngh, tr, qu, gi
+         // We can check for 3+ consonants or specific invalid pairs
+         if (/[bcdfghkmnpqrstvx]{3,}/.test(lower)) return true;
+
+         return false;
+      }
+
+      // Check if a word is a proper noun (capitalized)
+      function isProperNoun(word, originalWord) {
+         if (!originalWord || originalWord.length === 0) return false;
+         // First letter is uppercase
+         return /^[A-ZÀẰẦÈỀÌÒỒỜÙỪỲÁẮẤÉẾÍÓỐỚÚỨÝẢẲẨẺỂỈỎỔỞỦỬỶÃẴẪẼỄĨÕỖỠŨỮỸẠẶẬẸỆỊỌỘỢỤỰỴĂÂĐÊÔƠƯ]/.test(originalWord);
+      }
+
+      // Structural validator for Vietnamese syllables based on orthography rules
+      // Based on Python orthography generator rules
+      function isValidVietnameseStructure(word) {
+         if (!word || word.length === 0) return true;
+
+         const normalized = word.toLowerCase().normalize('NFC');
+
+         // Strip tones to get base form
+         const tonedToBase = {
+            'á': 'a', 'à': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
+            'ắ': 'ă', 'ằ': 'ă', 'ẳ': 'ă', 'ẵ': 'ă', 'ặ': 'ă',
+            'ấ': 'â', 'ầ': 'â', 'ẩ': 'â', 'ẫ': 'â', 'ậ': 'â',
+            'é': 'e', 'è': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e',
+            'ế': 'ê', 'ề': 'ê', 'ể': 'ê', 'ễ': 'ê', 'ệ': 'ê',
+            'í': 'i', 'ì': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
+            'ó': 'o', 'ò': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o',
+            'ố': 'ô', 'ồ': 'ô', 'ổ': 'ô', 'ỗ': 'ô', 'ộ': 'ô',
+            'ớ': 'ơ', 'ờ': 'ơ', 'ở': 'ơ', 'ỡ': 'ơ', 'ợ': 'ơ',
+            'ú': 'u', 'ù': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u',
+            'ứ': 'ư', 'ừ': 'ư', 'ử': 'ư', 'ữ': 'ư', 'ự': 'ư',
+            'ý': 'y', 'ỳ': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y'
+         };
+         const base = normalized.split('').map(c => tonedToBase[c] || c).join('');
+
+         // Valid onsets (single and digraph)
+         const validOnsets = ['b', 'c', 'ch', 'd', 'đ', 'g', 'gh', 'gi', 'h', 'k', 'kh', 'l', 'm', 'n', 'ng', 'ngh', 'nh', 'ph', 'qu', 'r', 's', 't', 'th', 'tr', 'v', 'x'];
+
+         // Valid rimes (from Python generator)
+         const validRimes = [
+            // a series
+            'a', 'ac', 'ach', 'ai', 'am', 'an', 'ang', 'anh', 'ao', 'ap', 'at', 'au', 'ay',
+            // ă series
+            'ăc', 'ăm', 'ăn', 'ăng', 'ăp', 'ăt',
+            // â series
+            'âc', 'âm', 'ân', 'âng', 'âp', 'ât', 'âu', 'ây',
+            // e series
+            'e', 'ec', 'em', 'en', 'eng', 'eo', 'ep', 'et',
+            // ê series
+            'ê', 'êch', 'ênh', 'êm', 'ên', 'êp', 'êt', 'êu',
+            // i series
+            'i', 'ich', 'im', 'in', 'inh', 'ip', 'it', 'iu',
+            // iê series
+            'iêm', 'iên', 'iêng', 'iêp', 'iêt', 'iêu',
+            // ia series
+            'ia',
+            // o series
+            'o', 'oc', 'oi', 'om', 'on', 'ong', 'op', 'ot',
+            // oa series
+            'oa', 'oac', 'oach', 'oai', 'oam', 'oan', 'oang', 'oanh', 'oap', 'oat', 'oay',
+            // oă series
+            'oăc', 'oăm', 'oăn', 'oăng', 'oăt',
+            // oe series
+            'oe', 'oen', 'oeo', 'oet',
+            // ô series
+            'ô', 'ôc', 'ôi', 'ôm', 'ôn', 'ông', 'ôp', 'ôt',
+            // ơ series
+            'ơ', 'ơi', 'ơm', 'ơn', 'ơp', 'ơt',
+            // u series
+            'u', 'uc', 'ui', 'um', 'un', 'ung', 'up', 'ut',
+            // uô series
+            'uôm', 'uôn', 'uông', 'uôt',
+            // ua series
+            'ua',
+            // uây series
+            'uây', 'uân', 'uâng', 'uât',
+            // uê series
+            'uê', 'uênh', 'uêch',
+            // uy series
+            'uy', 'uych', 'uynh', 'uyt',
+            // uya series
+            'uya',
+            // uyê series
+            'uyên', 'uyết',
+            // uơ series
+            'uơ',
+            // ư series
+            'ư', 'ưc', 'ưi', 'ưu', 'ưng', 'ưt', 'ưm',
+            // ươ series
+            'ươc', 'ươi', 'ươm', 'ươn', 'ương', 'ươp', 'ươt', 'ươu',
+            // ưa series
+            'ưa',
+            // y series
+            'y',
+            // yê series
+            'yêm', 'yên', 'yêng', 'yết', 'yêu'
+         ];
+
+         // Check if word starts with valid onset
+         let hasOnset = false;
+         let onset = '';
+         let rime = '';
+
+         // Try to match longest onset first
+         for (const o of validOnsets.sort((a, b) => b.length - a.length)) {
+            if (base.startsWith(o)) {
+               onset = o;
+               rime = base.slice(o.length);
+               hasOnset = true;
+               break;
+            }
+         }
+
+         // If no onset matched, check if it's a valid initial-only rime (y, yê series)
+         if (!hasOnset) {
+            rime = base;
+            // Check if it's a valid initial-only rime
+            const initialOnlyRimes = ['y', 'yêm', 'yên', 'yêng', 'yết', 'yêu'];
+            if (initialOnlyRimes.includes(rime)) {
+               return true; // Valid initial-only rime
+            }
+            // Other rimes can also be initial (oa, oe, ua, ưa, etc.) but not uô, ươ, uơ
+            if (rime.startsWith('uô') || rime.startsWith('ươ') || rime === 'uơ') {
+               return false; // These require onsets
+            }
+            // Check if it's a valid rime that can be initial
+            if (validRimes.includes(rime)) {
+               return true;
+            }
+            return false;
+         }
+
+         // Extract nucleus from rime (remove coda)
+         function extractNucleus(rime) {
+            const codas = ['ch', 'ng', 'nh', 'c', 'm', 'n', 'p', 't'];
+            for (const coda of codas.sort((a, b) => b.length - a.length)) {
+               if (rime.endsWith(coda)) {
+                  return rime.slice(0, -coda.length);
+               }
+            }
+            return rime;
+         }
+
+         const nucleus = extractNucleus(rime);
+         const nucleusStart = nucleus[0] || '';
+
+         // Check if rime is valid
+         if (!validRimes.includes(rime)) {
+            // Check for qu transformations (qu + i -> quy, qu + iê -> quyê)
+            if (onset === 'qu') {
+               if (nucleus === 'i' && rime === 'i') return true; // qu + i -> quy (transformed)
+               if (nucleus.startsWith('iê')) return true; // qu + iê -> quyê (transformed)
+               // qu + uy series (uy, uych, uynh, uyt, uyê)
+               if (nucleus.startsWith('uy')) return true;
+            }
+            // Check for gi transformations (gi + i -> gi, gi + iê -> giê)
+            if (onset === 'gi') {
+               if (nucleus === 'i' && rime === 'i') return true; // gi + i -> gi (transformed)
+               if (nucleus.startsWith('iê') || nucleus.startsWith('ia')) return true;
+               if (nucleus.startsWith('i')) return true; // gi + ich -> gich, etc.
+            }
+            return false;
+         }
+
+         // Validate onset-rime combinations (check nucleus, not rime)
+         if (hasOnset) {
+            // c/k rules: c before a/ă/â/o/ô/ơ/u/ư, k before e/ê/i
+            if (onset === 'c' && nucleusStart && ['e', 'ê', 'i'].includes(nucleusStart)) return false;
+            if (onset === 'k' && nucleusStart && !['e', 'ê', 'i'].includes(nucleusStart)) return false;
+
+            // g/gh rules: g before a/ă/â/o/ô/ơ/u/ư, gh before e/ê/i
+            if (onset === 'g' && nucleusStart && ['e', 'ê', 'i'].includes(nucleusStart)) return false;
+            if (onset === 'gh' && nucleusStart && !['e', 'ê', 'i'].includes(nucleusStart)) return false;
+
+            // ng/ngh rules: ng before a/ă/â/o/ô/ơ/u/ư, ngh before e/ê/i
+            if (onset === 'ng' && nucleusStart && ['e', 'ê', 'i'].includes(nucleusStart)) return false;
+            if (onset === 'ngh' && nucleusStart && !['e', 'ê', 'i'].includes(nucleusStart)) return false;
+
+            // qu rules: qu can combine with u (ua/uô/uê/uơ), ư, y (uy), and transformed i->y/iê->uyê
+            if (onset === 'qu') {
+               // qu + o/ô are invalid
+               if (nucleusStart === 'o' || nucleusStart === 'ô') return false;
+               // qu + a/ă/â/e/ê (direct, not medial) are invalid
+               if (nucleus === 'a' || nucleus === 'ă' || nucleus === 'â' || nucleus === 'e' || nucleus === 'ê') return false;
+               // qu + ia is invalid
+               if (nucleus === 'ia') return false;
+               // qu + i (single) -> quy (handled above)
+               // qu + iê -> quyê (handled above)
+               // qu + other i- rimes are invalid
+               if (nucleusStart === 'i' && nucleus !== 'i' && !nucleus.startsWith('iê')) return false;
+               // qu can combine with: u (ua/uô/uê/uơ), ư, y (uy)
+               if (!['u', 'ư', 'y'].includes(nucleusStart) && nucleus !== 'i' && !nucleus.startsWith('iê')) {
+                  return false;
+               }
+            }
+
+            // gi rules: gi + e invalid, gi + ê (direct) invalid
+            if (onset === 'gi') {
+               if (nucleusStart === 'e') return false;
+               if (nucleusStart === 'ê' && !nucleus.startsWith('iê')) return false;
+            }
+         }
+
+         // Additional validation: check for clearly invalid patterns
+         // Reject words with impossible consonant clusters
+         if (/[bcdfghjklmnpqrstvwxyz]{3,}/i.test(base)) return false;
+
+         // Reject words starting with invalid consonants (f, j, q without u, w, z)
+         if (/^[fjqwz]/i.test(base)) {
+            // Exception: qu is valid
+            if (!base.startsWith('qu')) return false;
+         }
+
+         // Check tone placement (if word has Vietnamese diacritics, structure is likely valid)
+         const hasVnDiacritics = /[ăâđêôơưàằầèềìòồờùừỳáắấéếíóốớúứýảẳẩẻểỉỏổởủửỷãẵẫẽễĩõỗỡũữỹạặậẹệịọộợụựỵ]/i.test(normalized);
+         if (hasVnDiacritics) {
+            // If it has Vietnamese diacritics and passes structure check, likely valid
+            return true;
+         }
+
+         // Words without diacritics can still be valid (no-tone syllables)
+         // But they must still match valid rime patterns
+         return true;
+      }
+
+      // Check if a syllable is valid Vietnamese orthography
+      function isValidVietnameseSyllable(syllable, originalSyllable) {
+         if (!syllable || syllable.length === 0) return { valid: true, reason: 'empty' };
+         const normalized = syllable.toLowerCase().normalize('NFC');
+
+         // Check against dictionary (most authoritative)
+         // Check against dictionary (DEPRECATED in favor of strict algorithmic check)
+         // if (VN_VALID_SYLLABLES.has(normalized)) {
+         //    return { valid: true, reason: 'dictionary' };
+         // }
+
+         // Use strict algorithmic structural check
+         if (isValidVietnameseStructure(syllable)) {
+            return { valid: true, reason: 'structural' };
+         }
+
+
+
+         return { valid: false, reason: 'not_found' };
+      }
+
+      // Multi-tier word validation - ALGORITHMIC ONLY (no dictionary dependency)
+      function validateWord(word, originalWord, options = {}) {
+         const allowForeign = options.allowForeign !== false;
+         const allowProperNouns = options.allowProperNouns !== false;
+
+         // Empty or very short
+         if (!word || word.length === 0) {
+            return { valid: true, reason: 'empty', confidence: 1.0 };
+         }
+
+         // Pure numbers or punctuation
+         if (/^[0-9]+$/.test(word) || /^[^\p{L}]+$/u.test(word)) {
+            return { valid: true, reason: 'non_text', confidence: 1.0 };
+         }
+
+         const normalized = word.toLowerCase().normalize('NFC');
+
+         // 1. Contains non-Vietnamese characters - check first (fast rejection)
+         const hasNonVnChars = /[^\sa-zA-Zàằầèềìòồờùừỳáắấéếíóốớúứýảẳẩẻểỉỏổởủửỷãẵẫẽễĩõỗỡũữỹạặậẹệịọộợụựỵăâđêôơư]/i.test(normalized);
+         if (hasNonVnChars) {
+            return { valid: false, reason: 'invalid_chars', confidence: 0.9 };
+         }
+
+         // 2. Structural validation (PRIMARY METHOD - based on Vietnamese orthography rules)
+         // This algorithmically validates ALL valid Vietnamese syllables
+         if (isValidVietnameseStructure(word)) {
+            return { valid: true, reason: 'structural', confidence: 0.95 };
+         }
+
+
+
+         // 4. Proper noun check (if allowed)
+         if (allowProperNouns && isProperNoun(word, originalWord)) {
+            // Still need to check structure for proper nouns
+            // If it has Vietnamese diacritics, likely valid
+            const hasVnDiacritics = /[ăâđêôơưàằầèềìòồờùừỳáắấéếíóốớúứýảẳẩẻểỉỏổởủửỷãẵẫẽễĩõỗỡũữỹạặậẹệịọộợụựỵ]/i.test(normalized);
+            if (hasVnDiacritics) {
+               return { valid: true, reason: 'proper_noun', confidence: 0.8 };
+            }
+         }
+
+         // 5. Foreign word check (if allowed)
+         if (allowForeign && isForeignWord(word)) {
+            return { valid: true, reason: 'foreign', confidence: 0.7 };
+         }
+
+         // 6. Words with Vietnamese diacritics but failed structure check
+         // Might be compound words or edge cases - be lenient
+         const hasVnDiacritics = /[ăâđêôơưàằầèềìòồờùừỳáắấéếíóốớúứýảẳẩẻểỉỏổởủửỷãẵẫẽễĩõỗỡũữỹạặậẹệịọộợụựỵ]/i.test(normalized);
+         if (hasVnDiacritics) {
+            // Check for clearly wrong patterns (4+ consecutive consonants)
+            if (!/[bcdfghjklmnpqrstvwxyz]{4,}/i.test(normalized)) {
+               return { valid: true, reason: 'has_diacritics', confidence: 0.75 };
+            }
+         }
+
+         // 7. Not found and doesn't match structure - likely invalid
+         return { valid: false, reason: 'not_found', confidence: 0.6 };
+      }
+
+      // Check for Old Orthography
+      // Based on Python orthography rules: for medial patterns (oa, oe, oă), tone should be on nucleus vowel (a/e/ă), not on o
+      // Old: ngọai, hoạ, goà → New: ngoại, họa, goá
+      function checkOrthographyStandard(word, style) {
+         if (!word) return null;
+         let normalized = word.normalize('NFC');
+         let fixed = normalized;
+
+         // Map tone-marked vowels (handles both upper and lowercase)
+         function getToneType(char) {
+            const lower = char.toLowerCase();
+            if ('áắấéếíóốớúứý'.includes(lower)) return 'acute';
+            if ('àằầèềìòồờùừỳ'.includes(lower)) return 'grave';
+            if ('ảẳẩẻểỉỏổởủửỷ'.includes(lower)) return 'hook';
+            if ('ãẵẫẽễĩõỗỡũữỹ'.includes(lower)) return 'tilde';
+            if ('ạặậẹệịọộợụựỵ'.includes(lower)) return 'dot';
+            return 'none';
+         }
+
+         function applyTone(char, type) {
+            const map = {
+               'acute': { 'a': 'á', 'ă': 'ắ', 'â': 'ấ', 'e': 'é', 'ê': 'ế', 'o': 'ó', 'ô': 'ố', 'ơ': 'ớ', 'u': 'ú', 'ư': 'ứ', 'y': 'ý' },
+               'grave': { 'a': 'à', 'ă': 'ằ', 'â': 'ầ', 'e': 'è', 'ê': 'ề', 'o': 'ò', 'ô': 'ồ', 'ơ': 'ờ', 'u': 'ù', 'ư': 'ừ', 'y': 'ỳ' },
+               'hook': { 'a': 'ả', 'ă': 'ẳ', 'â': 'ẩ', 'e': 'ẻ', 'ê': 'ể', 'o': 'ỏ', 'ô': 'ổ', 'ơ': 'ở', 'u': 'ủ', 'ư': 'ử', 'y': 'ỷ' },
+               'tilde': { 'a': 'ã', 'ă': 'ẵ', 'â': 'ẫ', 'e': 'ẽ', 'ê': 'ễ', 'o': 'õ', 'ô': 'ỗ', 'ơ': 'ỡ', 'u': 'ũ', 'ư': 'ữ', 'y': 'ỹ' },
+               'dot': { 'a': 'ạ', 'ă': 'ặ', 'â': 'ậ', 'e': 'ẹ', 'ê': 'ệ', 'o': 'ọ', 'ô': 'ộ', 'ơ': 'ợ', 'u': 'ụ', 'ư': 'ự', 'y': 'ỵ' }
+            };
+            const isUpper = char === char.toUpperCase() && char !== char.toLowerCase();
+            const base = removeTone(char).toLowerCase();
+            const toned = (map[type] && map[type][base]) || base;
+            return isUpper ? toned.toUpperCase() : toned;
+         }
+
+         function removeTone(char) {
+            return char.normalize('NFD').replace(/[\u0300-\u036f]/g, '').normalize('NFC');
+         }
+
+         // Regex for Medial Vowels: o (before a,e,ă) and u (before ê,ơ not in qu)
+
+         if (style === 'new') {
+            // Target: Tone on Nucleus (2nd vowel).
+            // Detect: Tone on Medial (1st vowel).
+
+            // 1. o-medial: (ó/ò/ỏ/õ/ọ) + (a/e/ă)
+            fixed = fixed.replace(/([óòỏõọốồổỗộớờởỡợ])([aeă])/gi, (m, o, v) => {
+               const tone = getToneType(o);
+               return removeTone(o) + applyTone(v, tone);
+            });
+
+            // 2. u-medial: (ú/ù/ủ/ũ/ụ) + (ê/ơ)  (Exclude qu)
+            fixed = fixed.replace(/(q?)([úùủũụ])([êơ])/gi, (m, pre, u, v) => {
+               if (pre && pre.toLowerCase() === 'q') return m;
+               const tone = getToneType(u);
+               return pre + removeTone(u) + applyTone(v, tone);
+            });
+         } else if (style === 'old') {
+            // Target: Tone on Medial (1st vowel).
+            // Detect: Tone on Nucleus (2nd vowel).
+
+            // 1. o-medial: o + (á/à/ả/ã/ạ/é/è/ẻ/ẽ/ẹ/ắ/ằ/ẳ/ẵ/ặ)
+            fixed = fixed.replace(/([o])([áàảãạéèẻẽẹắằẳẵặ])/gi, (m, o, v) => {
+               const tone = getToneType(v);
+               return applyTone(o, tone) + removeTone(v);
+            });
+
+            // 2. u-medial: u + (ế/ề/ể/ễ/ệ/ớ/ờ/ở/ỡ/ợ) (Exclude qu)
+            fixed = fixed.replace(/(q?)([u])([ếềểễệớờởỡợ])/gi, (m, pre, u, v) => {
+               if (pre && pre.toLowerCase() === 'q') return m;
+               const tone = getToneType(v);
+               return pre + applyTone(u, tone) + removeTone(v);
+            });
+         }
+
+         if (fixed !== normalized) {
+            return { valid: false, fix: fixed };
+         }
+         return { valid: true };
+      }
+
+      // Extract words from text (respecting Vietnamese word boundaries)
+      function extractWords(text) {
+         // Split on whitespace and common punctuation, preserving original case info
+         const matches = [];
+         const pattern = /[\p{L}\p{M}]+/gu;
+         let match;
+         while ((match = pattern.exec(text)) !== null) {
+            matches.push({ word: match[0], index: match.index });
+         }
+         return matches;
+      }
+
+      // Load syllables from JSON file (OPTIONAL - not required for validation)
+      // Validation uses algorithmic structural checks, dictionary is only for reference/statistics
+      async function loadSyllabary() {
+         // Algorithmic validation only - no dictionary loading
+         // Note: VN_SYLLABLES_DATA was removed in favor of strict algorithmic validation
+
+         console.log('✓ Using strict algorithmic Vietnamese syllable validation');
+         syllabaryLoaded = true; // Pretend loaded so logic flows if needed
+         return;
+
+
+         try {
+            // Try to load from external file (optional)
+            const response = await fetch('vn_syllables.json');
+            if (response.ok) {
+               const syllables = await response.json();
+               syllables.forEach(s => VN_VALID_SYLLABLES.add(s.toLowerCase().normalize('NFC')));
+               syllabaryLoaded = true;
+               console.log(`✓ Loaded ${VN_VALID_SYLLABLES.size} Vietnamese syllables (reference only)`);
+               return;
+            }
+         } catch (e) {
+            // Dictionary not found - not a problem, we use algorithmic validation
+         }
+
+         // Dictionary not loaded - validation uses algorithmic structural checks
+         syllabaryLoaded = false;
+         console.log('✓ Using algorithmic Vietnamese syllable validation (no dictionary required)');
+      }
+
+      let auditResults = [], parsedSegments = [], allOutputs = { json: null, text: null, layout: null, html: null };
+      let sortColumn = null, sortDirection = 'asc';
+
+      // Undo/Redo history
+      let historyStack = [];  // Past states
+      let redoStack = [];     // Future states (after undo)
+      const MAX_HISTORY = 50; // Limit history size
+
+      async function init() {
+         await loadSyllabary(); // Optional: load dictionary for reference (not required)
+         document.getElementById('translationStage').innerHTML = '<option value="">Select...</option>' + STAGES.map(s => `<option value="${s}">${s}</option>`).join('');
+         document.getElementById('fileInput').addEventListener('change', e => {
+            const f = e.target.files[0]; if (!f) return;
+            const r = new FileReader();
+            r.onload = ev => { document.getElementById('inputText').value = ev.target.result; showStatus('File loaded', 'success'); };
+            r.readAsText(f);
+         });
+         // Show validation method status
+         const validationStatus = syllabaryLoaded
+            ? `✓ Algorithmic validation active (${VN_VALID_SYLLABLES.size} reference syllables loaded)`
+            : '✓ Algorithmic validation active (no dictionary required)';
+         console.log(validationStatus);
+      }
+
+      function clearInput() { document.getElementById('inputText').value = ''; document.getElementById('fileInput').value = ''; }
+      function showStatus(msg, type) { const el = document.getElementById('status'); el.textContent = msg; el.className = 'status ' + type; }
+      function hideStatus() { document.getElementById('status').className = 'status'; }
+      function showProgress(pct, show = true) { const p = document.getElementById('progress'); p.style.display = show ? 'block' : 'none'; document.getElementById('progressFill').style.width = pct + '%'; }
+
+      function extractTranslation(content) {
+         // Find first < and last > to handle nested brackets in content
+         const start = content.indexOf('<');
+         if (start === -1) return null;
+         const end = content.lastIndexOf('>');
+         if (end === -1 || end <= start) return null;
+         const block = content.slice(start + 1, end);
+         // Use LAST '=' as delimiter to allow '<' and '>' in source text
+         const eq = block.lastIndexOf('=');
+         if (eq === -1) return null;
+         return { source: block.slice(0, eq).trim(), target: block.slice(eq + 1).trim(), annotations: content.slice(end + 1) };
+      }
+
+      function parseInput(text) {
+         const lines = text.split('\n'), segs = [];
+         lines.forEach((raw, i) => {
+            const line = raw.trim(); if (!line || !line.startsWith('^')) return;
+            const m = line.match(SEGMENT_PATTERN); if (!m) return;
+            const trans = extractTranslation(m[4]); if (!trans) return;
+            segs.push({ idx: i, segId: `${m[1]}-${m[2]}-${m[3]}`, page: +m[1], block: +m[2], seg: +m[3], source: trans.source, target: trans.target, annotations: trans.annotations, raw });
+         });
+         return segs;
+      }
+
+      function runChecks(segs) {
+         const issues = [];
+         // Simplified check options - orthography is primary, others are optional
+         const basicCleanup = document.getElementById('chkBasicCleanup').checked;
+         const chk = {
+            dupSpace: basicCleanup,
+            dupWord: basicCleanup,
+            strangeChar: basicCleanup,
+            punct: basicCleanup,
+            unicode: basicCleanup,
+            fullWidth: basicCleanup,
+            syllable: document.getElementById('chkSyllable').checked,
+            orthography: document.getElementById('selOrthography').value
+         };
+
+         segs.forEach((seg, sIdx) => {
+            const t = seg.target.normalize('NFC');
+
+            // Duplicate spaces
+            if (chk.dupSpace) {
+               for (const m of t.matchAll(/  +/g)) {
+                  issues.push({ id: `${seg.segId}-ds-${m.index}`, segId: seg.segId, sIdx, type: 'Dup Space', badge: 'warning', pos: m.index, orig: m[0], fix: ' ', applied: false });
+               }
+            }
+
+            // Duplicate words - use space/start/end boundaries for Vietnamese
+            if (chk.dupWord) {
+               const dupWordPattern = /(?:^|\s)([\p{L}\p{M}]+)\s+\1(?=\s|$)/giu;
+               let wm;
+               while ((wm = dupWordPattern.exec(t)) !== null) {
+                  const matchStart = wm.index + (wm[0].startsWith(' ') ? 1 : 0);
+                  const word = wm[1];
+                  const fullMatch = word + ' ' + word;
+                  issues.push({ id: `${seg.segId}-dw-${matchStart}`, segId: seg.segId, sIdx, type: 'Dup Word', badge: 'error', pos: matchStart, orig: fullMatch, fix: word, applied: false });
+               }
+            }
+
+            // Duplicate letters (e.g., "nnày" → "này", "helllo" → "hello")
+            if (chk.dupWord) {
+               // Match 3+ consecutive identical letters (likely typo)
+               const dupLetterPattern = /([\p{L}])\1{2,}/giu;
+               for (const m of t.matchAll(dupLetterPattern)) {
+                  const letter = m[1];
+                  // Reduce to single letter (most common fix)
+                  issues.push({ id: `${seg.segId}-dl-${m.index}`, segId: seg.segId, sIdx, type: 'Dup Letter', badge: 'warning', pos: m.index, orig: m[0], fix: letter, applied: false });
+               }
+            }
+
+            // Strange chars (Cyrillic lookalikes)
+            if (chk.strangeChar) {
+               for (let i = 0; i < t.length; i++) {
+                  if (CYRILLIC_MAP[t[i]]) {
+                     issues.push({ id: `${seg.segId}-sc-${i}`, segId: seg.segId, sIdx, type: 'Strange Char', badge: 'error', pos: i, orig: t[i], fix: CYRILLIC_MAP[t[i]], applied: false });
+                  }
+               }
+            }
+
+            // Punctuation
+            if (chk.punct) {
+               for (const m of t.matchAll(/([.,;:!?])\1+/g)) {
+                  issues.push({ id: `${seg.segId}-dp-${m.index}`, segId: seg.segId, sIdx, type: 'Dup Punct', badge: 'warning', pos: m.index, orig: m[0], fix: m[1], applied: false });
+               }
+               for (const m of t.matchAll(/ +([.,;:!?])/g)) {
+                  issues.push({ id: `${seg.segId}-sp-${m.index}`, segId: seg.segId, sIdx, type: 'Space+Punct', badge: 'info', pos: m.index, orig: m[0], fix: m[1], applied: false });
+               }
+            }
+
+            // Unicode
+            if (chk.unicode) {
+               for (const m of t.matchAll(/[\u200B\u200C\u200D\uFEFF]/g)) {
+                  issues.push({ id: `${seg.segId}-zw-${m.index}`, segId: seg.segId, sIdx, type: 'Zero-width', badge: 'error', pos: m.index, orig: '[ZWSP]', fix: '', applied: false });
+               }
+               const nfc = seg.target.normalize('NFC');
+               if (nfc !== seg.target) {
+                  issues.push({ id: `${seg.segId}-nfd-0`, segId: seg.segId, sIdx, type: 'NFD→NFC', badge: 'info', pos: 0, orig: '[NFD]', fix: '[NFC]', fullNfc: nfc, applied: false });
+               }
+            }
+
+            // Full-width
+            if (chk.fullWidth) {
+               for (const m of t.matchAll(/[\uFF01-\uFF5E]/g)) {
+                  issues.push({ id: `${seg.segId}-fw-${m.index}`, segId: seg.segId, sIdx, type: 'Full-width', badge: 'warning', pos: m.index, orig: m[0], fix: String.fromCharCode(m[0].charCodeAt(0) - 0xFEE0), applied: false });
+               }
+            }
+
+            // Invalid/Suspicious Vietnamese words
+            if (chk.syllable) {
+               const words = extractWords(t);
+               for (const { word, index: pos } of words) {
+                  // Skip pure numbers
+                  if (/^[0-9]+$/.test(word)) continue;
+
+                  // Use multi-tier validation (allow foreign words and proper nouns by default)
+                  const result = validateWord(word, word, {
+                     allowForeign: true,
+                     allowProperNouns: true
+                  });
+
+                  if (!result.valid) {
+                     // Determine badge based on confidence
+                     const badge = result.confidence >= 0.8 ? 'error' : 'warning';
+                     const typeLabel = result.reason === 'invalid_chars' ? 'Invalid Chars' : 'Suspicious Word';
+                     issues.push({
+                        id: `${seg.segId}-syl-${pos}`,
+                        segId: seg.segId,
+                        sIdx,
+                        type: typeLabel,
+                        badge: badge,
+                        pos: pos,
+                        orig: word,
+                        fix: '(review)',
+                        validationReason: result.reason,
+                        confidence: result.confidence,
+                        applied: false
+                     });
+                  }
+               }
+            }
+
+            // Orthography check (old ↔ new standard)
+            if (chk.orthography !== 'none') {
+               const words = extractWords(t);
+               for (const { word, index: pos } of words) {
+                  // Skip pure numbers
+                  if (/^[0-9]+$/.test(word)) continue;
+
+                  const lower = word.toLowerCase().normalize('NFC');
+
+                  // Only check syllables that have valid Vietnamese structure
+                  if (!isValidVietnameseStructure(lower)) {
+                     continue; // Skip invalid structures (foreign words, etc.)
+                  }
+
+                  const orthoResult = checkOrthographyStandard(word, chk.orthography);
+                  if (orthoResult && !orthoResult.valid) {
+                     issues.push({
+                        id: `${seg.segId}-ortho-${pos}`,
+                        segId: seg.segId,
+                        sIdx,
+                        type: 'Orthography',
+                        badge: 'warning',
+                        pos: pos,
+                        orig: word,
+                        fix: orthoResult.fix,
+                        applied: false
+                     });
+                  }
+               }
+            }
+         });
+         return issues;
+      }
+
+      function getContext(seg, pos, len) {
+         const t = seg.target;
+         const MIN_CHARS = 20;
+         const MIN_WORDS = 4;
+
+         // Find start position: go back min 20 chars OR 4 words
+         let start = Math.max(0, pos - MIN_CHARS);
+         // Extend to include full words (find previous spaces)
+         let wordCount = 0;
+         for (let i = pos - 1; i >= 0 && (i > pos - MIN_CHARS || wordCount < MIN_WORDS); i--) {
+            if (t[i] === ' ') wordCount++;
+            if (wordCount >= MIN_WORDS && i <= pos - MIN_CHARS) { start = i + 1; break; }
+            if (i === 0) start = 0;
+         }
+         start = Math.max(0, start);
+
+         // Find end position: go forward min 20 chars OR 4 words
+         let end = Math.min(t.length, pos + len + MIN_CHARS);
+         wordCount = 0;
+         for (let i = pos + len; i < t.length && (i < pos + len + MIN_CHARS || wordCount < MIN_WORDS); i++) {
+            if (t[i] === ' ') wordCount++;
+            if (wordCount >= MIN_WORDS && i >= pos + len + MIN_CHARS) { end = i; break; }
+            if (i === t.length - 1) end = t.length;
+         }
+         end = Math.min(t.length, end);
+
+         let before = t.slice(start, pos), match = t.slice(pos, pos + len), after = t.slice(pos + len, end);
+         if (start > 0) before = '…' + before;
+         if (end < t.length) after = after + '…';
+         return { before, match, after };
+      }
+
+      function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+      function runAudit() {
+         const input = document.getElementById('inputText').value.trim();
+         if (!input) { showStatus('No input provided', 'error'); return; }
+         showProgress(20, true); hideStatus();
+         parsedSegments = parseInput(input);
+         if (!parsedSegments.length) { showStatus('No valid segments found', 'error'); showProgress(0, false); return; }
+         showProgress(50);
+         auditResults = runChecks(parsedSegments);
+         showProgress(80);
+         sortColumn = null;
+         sortDirection = 'asc';
+         document.querySelectorAll('.report-table th').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+         });
+         renderReport();
+         updateStats();
+         generateAllOutputs(input);
+         document.getElementById('statsSection').classList.remove('hidden');
+         document.getElementById('reportSection').classList.remove('hidden');
+         document.getElementById('outputSection').classList.remove('hidden');
+         showProgress(100);
+         setTimeout(() => showProgress(0, false), 300);
+         showStatus(`Found ${auditResults.length} issues in ${parsedSegments.length} segments`, 'success');
+      }
+
+      function sortTable(column) {
+         // Toggle direction if same column, otherwise set to asc
+         if (sortColumn === column) {
+            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+         } else {
+            sortColumn = column;
+            sortDirection = 'asc';
+         }
+
+         // Update header classes
+         document.querySelectorAll('.report-table th').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+         });
+         const headers = document.querySelectorAll('.report-table th');
+         const columnMap = { 'checkbox': 0, 'segment': 1, 'position': 2, 'type': 3, 'context': 4, 'fix': 5 };
+         const headerIndex = columnMap[column];
+         if (headerIndex !== undefined && headers[headerIndex]) {
+            headers[headerIndex].classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+         }
+
+         // Sort auditResults
+         const sorted = [...auditResults].sort((a, b) => {
+            let valA, valB;
+
+            switch (column) {
+               case 'checkbox':
+                  valA = a.applied ? 1 : 0;
+                  valB = b.applied ? 1 : 0;
+                  break;
+               case 'segment':
+                  valA = a.segId;
+                  valB = b.segId;
+                  break;
+               case 'position':
+                  valA = a.pos;
+                  valB = b.pos;
+                  break;
+               case 'type':
+                  valA = a.type;
+                  valB = b.type;
+                  break;
+               case 'context':
+                  valA = a.orig;
+                  valB = b.orig;
+                  break;
+               case 'fix':
+                  valA = a.fix;
+                  valB = b.fix;
+                  break;
+               default:
+                  return 0;
+            }
+
+            // Compare values
+            if (typeof valA === 'number' && typeof valB === 'number') {
+               return sortDirection === 'asc' ? valA - valB : valB - valA;
+            } else {
+               const strA = String(valA || '').toLowerCase();
+               const strB = String(valB || '').toLowerCase();
+               if (sortDirection === 'asc') {
+                  return strA.localeCompare(strB);
+               } else {
+                  return strB.localeCompare(strA);
+               }
+            }
+         });
+
+         auditResults = sorted;
+         renderReport();
+      }
+
+      function renderReport() {
+         const tbody = document.getElementById('reportBody');
+         if (!auditResults.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">No issues found</td></tr>'; return; }
+         tbody.innerHTML = auditResults.map((iss, i) => {
+            const seg = parsedSegments[iss.sIdx];
+            const ctx = getContext(seg, iss.pos, iss.orig.length);
+            const origHtml = iss.orig.startsWith('[') ? `<span class="hl-info">${esc(iss.orig)}</span>` : `<span class="hl-error">${esc(iss.orig)}</span>`;
+            let fixHtml;
+            if (iss.fix === '') {
+               fixHtml = '<span class="hl-fix">(remove)</span>';
+            } else if (iss.fix === '(review)') {
+               fixHtml = '<span class="hl-info">(review)</span>';
+            } else {
+               fixHtml = `<span class="hl-fix">${esc(iss.fix)}</span>`;
+            }
+            // Show context for fix column too
+            const fixContext = `${esc(ctx.before)}${fixHtml}${esc(ctx.after)}`;
+            return `<tr data-id="${iss.id}">
+                    <td><input type="checkbox" class="iss-cb" data-idx="${i}" ${iss.applied ? 'disabled checked' : ''}></td>
+                    <td class="mono">${esc(iss.segId)}</td>
+                    <td class="mono">${iss.pos}</td>
+                    <td><span class="issue-badge ${iss.badge}">${esc(iss.type)}</span></td>
+                    <td class="mono">${esc(ctx.before)}${origHtml}${esc(ctx.after)}</td>
+                    <td class="mono">${fixContext}</td>
+                </tr>`;
+         }).join('');
+      }
+
+      function updateStats() {
+         document.getElementById('statSegs').textContent = parsedSegments.length;
+         document.getElementById('statIssues').textContent = auditResults.length;
+         const fixed = auditResults.filter(i => i.applied).length;
+         document.getElementById('statFixed').textContent = fixed;
+         document.getElementById('statPending').textContent = auditResults.length - fixed;
+      }
+
+      function toggleSelectAll() {
+         const chk = document.getElementById('selectAll').checked;
+         document.querySelectorAll('.iss-cb:not(:disabled)').forEach(cb => cb.checked = chk);
+      }
+
+      function applySelected() {
+         const cbs = document.querySelectorAll('.iss-cb:checked:not(:disabled)');
+         if (!cbs.length) { showStatus('No issues selected', 'info'); return; }
+
+         // Save current state to history before applying
+         saveToHistory();
+
+         const bySegIdx = {};
+         cbs.forEach(cb => {
+            const idx = +cb.dataset.idx, iss = auditResults[idx];
+            if (!bySegIdx[iss.sIdx]) bySegIdx[iss.sIdx] = [];
+            bySegIdx[iss.sIdx].push({ idx, iss });
+         });
+         Object.keys(bySegIdx).forEach(sIdx => {
+            const items = bySegIdx[sIdx].sort((a, b) => b.iss.pos - a.iss.pos);
+            let t = parsedSegments[sIdx].target;
+            items.forEach(({ idx, iss }) => {
+               if (iss.fullNfc) { t = t.normalize('NFC'); }
+               else if (iss.orig === '[ZWSP]') { t = t.slice(0, iss.pos) + t.slice(iss.pos + 1); }
+               else if (!iss.orig.startsWith('[')) { t = t.slice(0, iss.pos) + iss.fix + t.slice(iss.pos + iss.orig.length); }
+               auditResults[idx].applied = true;
+            });
+            parsedSegments[sIdx].target = t;
+         });
+         regenerateOutput();
+
+         // Update input text to match the new state
+         document.getElementById('inputText').value = document.getElementById('outputText').value;
+
+         // Re-apply sorting after applying fixes
+         if (sortColumn) {
+            sortTable(sortColumn);
+         } else {
+            renderReport();
+         }
+         updateStats();
+         updateHistoryButtons();
+         showStatus(`Applied ${cbs.length} fixes. Click "Re-audit" to refresh issue list.`, 'success');
+      }
+
+      // Save current state to history
+      function saveToHistory() {
+         const state = {
+            inputText: document.getElementById('inputText').value,
+            parsedSegments: JSON.parse(JSON.stringify(parsedSegments)),
+            auditResults: JSON.parse(JSON.stringify(auditResults))
+         };
+         historyStack.push(state);
+         if (historyStack.length > MAX_HISTORY) historyStack.shift();
+         redoStack = []; // Clear redo stack on new action
+         updateHistoryButtons();
+      }
+
+      // Restore state from history
+      function restoreState(state) {
+         document.getElementById('inputText').value = state.inputText;
+         parsedSegments = JSON.parse(JSON.stringify(state.parsedSegments));
+         auditResults = JSON.parse(JSON.stringify(state.auditResults));
+         regenerateOutput();
+         if (sortColumn) {
+            sortTable(sortColumn);
+         } else {
+            renderReport();
+         }
+         updateStats();
+         updateHistoryButtons();
+      }
+
+      // Undo last action
+      function undoAction() {
+         if (historyStack.length === 0) return;
+
+         // Save current state to redo stack
+         const currentState = {
+            inputText: document.getElementById('inputText').value,
+            parsedSegments: JSON.parse(JSON.stringify(parsedSegments)),
+            auditResults: JSON.parse(JSON.stringify(auditResults))
+         };
+         redoStack.push(currentState);
+
+         // Restore previous state
+         const prevState = historyStack.pop();
+         restoreState(prevState);
+         showStatus('Undo successful', 'success');
+      }
+
+      // Redo undone action
+      function redoAction() {
+         if (redoStack.length === 0) return;
+
+         // Save current state to history stack
+         const currentState = {
+            inputText: document.getElementById('inputText').value,
+            parsedSegments: JSON.parse(JSON.stringify(parsedSegments)),
+            auditResults: JSON.parse(JSON.stringify(auditResults))
+         };
+         historyStack.push(currentState);
+
+         // Restore redo state
+         const redoState = redoStack.pop();
+         restoreState(redoState);
+         showStatus('Redo successful', 'success');
+      }
+
+      // Re-run audit on current text (refreshes issue list)
+      function reAudit() {
+         const input = document.getElementById('inputText').value.trim();
+         if (!input) { showStatus('No input to audit', 'error'); return; }
+
+         showProgress(20, true);
+         parsedSegments = parseInput(input);
+         if (!parsedSegments.length) { showStatus('No valid segments found', 'error'); showProgress(0, false); return; }
+
+         showProgress(50);
+         auditResults = runChecks(parsedSegments);
+         showProgress(80);
+
+         sortColumn = null;
+         sortDirection = 'asc';
+         document.querySelectorAll('.report-table th').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+         });
+
+         renderReport();
+         updateStats();
+         generateAllOutputs(input);
+
+         showProgress(100);
+         setTimeout(() => showProgress(0, false), 300);
+         showStatus(`Re-audit complete: ${auditResults.length} issues in ${parsedSegments.length} segments`, 'success');
+      }
+
+      // Update undo/redo button states
+      function updateHistoryButtons() {
+         document.getElementById('btnUndo').disabled = historyStack.length === 0;
+         document.getElementById('btnRedo').disabled = redoStack.length === 0;
+      }
+
+      function regenerateOutput() {
+         const lines = document.getElementById('inputText').value.split('\n');
+         parsedSegments.forEach(seg => { lines[seg.idx] = `^${seg.segId} <${seg.source} = ${seg.target}>${seg.annotations}`; });
+         const out = lines.join('\n');
+         document.getElementById('outputText').value = out;
+         generateAllOutputs(out);
+      }
+
+      function generateAllOutputs(text) {
+         const segs = parseForOutput(text);
+         const meta = { source_id: document.getElementById('sourceId').value.trim() || 'UNKN', document_title: document.getElementById('documentTitle').value.trim() || 'Untitled', source_language_code: 'en', target_language_code: 'vi', translation_stage: document.getElementById('translationStage').value };
+         const data = { metadata: meta, translation_segments: segs };
+         allOutputs.json = JSON.stringify(data, null, 2);
+         allOutputs.text = genText(data);
+         allOutputs.layout = genLayout(data);
+         allOutputs.html = genHtml(data);
+         updateFolderName();
+      }
+
+      function parseForOutput(text) {
+         const lines = text.split('\n'), segs = [];
+         lines.forEach(raw => {
+            const line = raw.trim(); if (!line.startsWith('^')) return;
+            const m = line.match(SEGMENT_PATTERN); if (!m) return;
+            const trans = extractTranslation(m[4]); if (!trans) return;
+            segs.push({ segment_id: `${m[1]}-${m[2]}-${m[3]}`, page_number: +m[1], block_number: +m[2], segment_number: +m[3], source_text: trans.source, target_text: trans.target, source_tokens_list: [], target_tokens_list: [], translation_mapping_list: [], comments: { general_comments: [], rationale_comments: [], issue_comments: [] } });
+         });
+         return segs;
+      }
+
+      function genText(data) {
+         let out = `---\nsource_id: "${data.metadata.source_id}"\ndocument_title: "${data.metadata.document_title}"\nsource_language_code: "${data.metadata.source_language_code}"\ntarget_language_code: "${data.metadata.target_language_code}"\ntranslation_stage: "${data.metadata.translation_stage}"\ncreated_at: "${new Date().toISOString()}"\n---\n\n`;
+         data.translation_segments.forEach(s => { out += `^${s.segment_id} <${s.source_text} = ${s.target_text}>\n`; });
+         return out;
+      }
+
+      function genLayout(data) {
+         const pm = {};
+         data.translation_segments.forEach(s => { if (!pm[s.page_number]) pm[s.page_number] = {}; if (!pm[s.page_number][s.block_number]) pm[s.page_number][s.block_number] = []; pm[s.page_number][s.block_number].push(s); });
+         let out = '---\nformat: "layout"\n---\n\n';
+         Object.keys(pm).sort((a, b) => a - b).forEach(p => {
+            out += `>>>>>>>>>>[Page ${p}]<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n`;
+            Object.keys(pm[p]).sort((a, b) => a - b).forEach(b => {
+               const segs = pm[p][b];
+               const src = segs.map(s => s.source_text).join(' '), tgt = segs.map(s => s.target_text).join(' ');
+               out += `\n[P.${p} B.${b}]----------<${trunc(src)}>\n\n${tgt}\n\n`;
+            });
+         });
+         return out;
+      }
+      function trunc(t, f = 5, l = 5) { const w = t.split(/\s+/); return w.length <= f + l ? t : w.slice(0, f).join(' ') + ' ... ' + w.slice(-l).join(' '); }
+
+      function genAuditReport() {
+         const meta = {
+            source_id: document.getElementById('sourceId').value.trim() || 'UNKN',
+            document_title: document.getElementById('documentTitle').value.trim() || 'Untitled',
+            generated_at: new Date().toISOString(),
+            total_segments: parsedSegments.length,
+            total_issues: auditResults.length,
+            issues_fixed: auditResults.filter(i => i.applied).length,
+            issues_pending: auditResults.filter(i => !i.applied).length
+         };
+         const issues = auditResults.map(iss => {
+            const seg = parsedSegments[iss.sIdx];
+            return {
+               segment_id: iss.segId,
+               position: iss.pos,
+               type: iss.type,
+               original: iss.orig,
+               fix: iss.fix,
+               status: iss.applied ? 'fixed' : 'pending',
+               context: seg ? seg.target.slice(Math.max(0, iss.pos - 15), iss.pos + iss.orig.length + 15) : ''
+            };
+         });
+         return JSON.stringify({ audit_report: { metadata: meta, issues } }, null, 2);
+      }
+
+      function genHtml(data) {
+         const m = data.metadata, pm = {};
+         data.translation_segments.forEach(s => { if (!pm[s.page_number]) pm[s.page_number] = {}; if (!pm[s.page_number][s.block_number]) pm[s.page_number][s.block_number] = []; pm[s.page_number][s.block_number].push(s); });
+         const pages = Object.keys(pm).sort((a, b) => a - b);
+         let ph = '';
+         pages.forEach((p, idx) => {
+            let bh = '';
+            Object.keys(pm[p]).sort((a, b) => a - b).forEach(b => {
+               const segs = pm[p][b], src = segs.map(s => esc(s.source_text)).join(' '), tgt = segs.map(s => esc(s.target_text)).join(' ');
+               bh += `<tr><td class="source"><div class="bh">P${p}B${b}</div><div>${src}</div></td><td class="target"><div class="bh">P${p}B${b}</div><div>${tgt}</div></td></tr>`;
+            });
+            ph += `<div class="page ${idx === 0 ? 'active' : ''}" id="page${p}"><table>${bh}</table></div>`;
+         });
+         return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(m.document_title)}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui;font-size:14px;background:#f5f5f5}.hdr{background:#fff;padding:10px 16px;border-bottom:1px solid #ddd;font-size:12px;color:#666}.nav{background:#fff;padding:8px 16px;border-bottom:1px solid #ddd;display:flex;gap:8px;align-items:center}.nav button{padding:4px 12px;border:1px solid #ccc;background:#fff;cursor:pointer;border-radius:4px}.nav input{width:50px;padding:4px;text-align:center;border:1px solid #ccc;border-radius:4px}.content{padding:16px}table{width:100%;border-collapse:collapse;background:#fff}td{padding:12px;border-bottom:1px solid #eee;vertical-align:top;width:50%}.source{border-right:1px solid #eee;background:#fafafa}.bh{font-size:11px;color:#999;margin-bottom:6px}.page{display:none}.page.active{display:block}</style></head><body><div class="hdr"><div><strong>ID:</strong> ${esc(m.source_id)} | <strong>Title:</strong> ${esc(m.document_title)} | <strong>Lang:</strong> ${esc(m.source_language_code)}→${esc(m.target_language_code)}</div></div><div class="nav"><button onclick="prev()">← Prev</button><button onclick="next()">Next →</button><span>Page</span><input type="number" id="pi" min="1" max="${pages.length}" value="1" onchange="go(+this.value)"><span>of ${pages.length}</span></div><div class="content">${ph}</div><script>let cur=1,tot=${pages.length},pgs=[${pages.join(',')}];function show(i){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const pg=document.getElementById('page'+pgs[i-1]);if(pg){pg.classList.add('active');document.getElementById('pi').value=i;}}function next(){if(cur<tot){cur++;show(cur);}}function prev(){if(cur>1){cur--;show(cur);}}function go(n){if(n>=1&&n<=tot){cur=n;show(cur);}}show(cur);<\/script></body></html>`;
+      }
+
+      function getTimestamp() { const d = new Date(), yy = String(d.getFullYear()).slice(-2), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0'), hh = String(d.getHours()).padStart(2, '0'), mi = String(d.getMinutes()).padStart(2, '0'); return `[${yy}${mm}${dd}${hh}${mi}]`; }
+      function updateFolderName() { const ts = getTimestamp(), sid = document.getElementById('sourceId').value.trim() || 'UNKN', ttl = document.getElementById('documentTitle').value.trim() || 'Untitled'; document.getElementById('folderName').textContent = `${ts} - ${sid} ${ttl} - audit`; }
+
+      async function saveAllOutputs() {
+         if (!allOutputs.json) { showStatus('No output to save', 'error'); return; }
+         const folder = document.getElementById('folderName').textContent;
+         if ('showDirectoryPicker' in window) {
+            try {
+               const dir = await window.showDirectoryPicker({ mode: 'readwrite' });
+               const fd = await dir.getDirectoryHandle(folder, { create: true });
+               const reportContent = genAuditReport();
+               for (const [k, ext, mime] of [['json', 'json', 'application/json'], ['text', 'txt', 'text/plain'], ['layout', 'txt', 'text/plain'], ['html', 'html', 'text/html']]) {
+                  const fh = await fd.getFileHandle(`${folder} - ${k}.${ext}`, { create: true });
+                  const w = await fh.createWritable(); await w.write(allOutputs[k]); await w.close();
+               }
+               // Save audit report
+               const rfh = await fd.getFileHandle(`${folder} - audit_report.json`, { create: true });
+               const rw = await rfh.createWritable(); await rw.write(reportContent); await rw.close();
+               showStatus(`Saved to: ${folder}`, 'success');
+            } catch (e) { if (e.name !== 'AbortError') fallback(folder); }
+         } else { fallback(folder); }
+      }
+      function fallback(folder) { showStatus('Downloading files...', 'info');['json', 'text', 'layout', 'html', 'report'].forEach((t, i) => setTimeout(() => downloadFormat(t, folder), i * 200)); }
+      function downloadFormat(type, folder) {
+         if (!folder) folder = document.getElementById('folderName').textContent;
+         const exts = { json: 'json', text: 'txt', layout: 'txt', html: 'html', report: 'json' };
+         const mimes = { json: 'application/json', text: 'text/plain', layout: 'text/plain', html: 'text/html', report: 'application/json' };
+         let content = allOutputs[type];
+         if (type === 'report') content = genAuditReport();
+         if (!content) return;
+         const fname = type === 'report' ? `${folder} - audit_report.json` : `${folder} - ${type}.${exts[type]}`;
+         const blob = new Blob([content], { type: mimes[type] + ';charset=utf-8' });
+         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname;
+         document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
+      }
+
+      function resetApp() {
+         document.getElementById('inputText').value = '';
+         document.getElementById('outputText').value = '';
+         document.getElementById('fileInput').value = '';
+         ['statsSection', 'reportSection', 'outputSection'].forEach(id => document.getElementById(id).classList.add('hidden'));
+         auditResults = []; parsedSegments = []; allOutputs = { json: null, text: null, layout: null, html: null };
+         hideStatus();
+      }
+
+      init();
+   </script>
+</body>
+
+</html>

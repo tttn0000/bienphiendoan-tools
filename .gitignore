@@ -1,0 +1,13 @@
+# Sync script - excluded from repo
+sync-to-github.ps1
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

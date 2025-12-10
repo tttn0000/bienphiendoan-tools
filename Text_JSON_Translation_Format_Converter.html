@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text JSON Translation Format Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .config-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .config-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        textarea {
+            resize: vertical;
+            font-family: 'Consolas', 'Courier New', monospace;
+            min-height: 250px;
+        }
+
+        .direction-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .direction-btn {
+            padding: 18px 15px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            background: #e7f3ff;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .direction-btn:hover {
+            background: #cce5ff;
+        }
+
+        .direction-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .radio-group {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        button.secondary-btn {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+
+        button.secondary-btn:hover:not(:disabled) {
+            background: #e2e2e2;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .save-panel {
+            margin-top: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .save-panel h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .save-panel .mono-text {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            color: #222;
+            word-break: break-all;
+        }
+
+        .save-file-list {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            row-gap: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .save-panel .download-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .save-hint {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        button:hover:not(:disabled) {
+            background: #0056b3;
+        }
+
+        .file-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-input-group input[type="file"] {
+            flex: 1;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .error-box {
+            margin-top: 15px;
+            padding: 12px 15px;
+            border-radius: 4px;
+            border: 1px solid #e0b4b4;
+            background: #fff5f5;
+            color: #7a1f1f;
+            display: none;
+        }
+
+        .error-box h3 {
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .error-box ul {
+            margin-left: 18px;
+            font-size: 12px;
+        }
+
+        .error-box li {
+            margin-bottom: 4px;
+        }
+
+        .error-box li.warning {
+            color: #8a6d1f;
+        }
+
+        .error-box li.error {
+            color: #7a1f1f;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+            .direction-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text JSON Translation Format Converter</h1>
+
+        <div class="config-section">
+            <div class="config-title">ARGUMENTS & CONFIGURATION</div>
+            
+            <div class="grid-2col">
+                <div class="form-group">
+                    <label for="sourceId">Source ID (4 characters):</label>
+                    <input type="text" id="sourceId" maxlength="4" placeholder="e.g., BPDH">
+                </div>
+
+                <div class="form-group">
+                    <label for="documentTitle">Document Title:</label>
+                    <input type="text" id="documentTitle" placeholder="Auto-detected from input">
+                </div>
+
+                <div class="form-group">
+                    <label for="translationStage">Translation Stage:</label>
+                    <select id="translationStage"></select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sourceLang">Source Language Code:</label>
+                    <select id="sourceLang">
+                        <option value="en" selected>en - English</option>
+                        <option value="vi">vi - Vietnamese</option>
+                        <option value="fr">fr - French</option>
+                        <option value="es">es - Spanish</option>
+                        <option value="de">de - German</option>
+                        <option value="zh">zh - Chinese</option>
+                        <option value="ja">ja - Japanese</option>
+                        <option value="ko">ko - Korean</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetLang">Target Language Code:</label>
+                    <select id="targetLang">
+                        <option value="vi" selected>vi - Vietnamese</option>
+                        <option value="en">en - English</option>
+                        <option value="fr">fr - French</option>
+                        <option value="es">es - Spanish</option>
+                        <option value="de">de - German</option>
+                        <option value="zh">zh - Chinese</option>
+                        <option value="ja">ja - Japanese</option>
+                        <option value="ko">ko - Korean</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <div class="config-title">INPUT</div>
+            
+            <div class="form-group">
+                <div class="file-input-group">
+                    <input type="file" id="fileInput" accept=".txt,.json,.html">
+                    <button onclick="clearInput()">Clear</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="inputText">Or Paste Text Here:</label>
+                <textarea id="inputText" placeholder="Paste your text or JSON content here..." oninput="validateInput()" onpaste="handlePaste(event)"></textarea>
+            </div>
+
+            <div id="validationStatus" class="status" style="display:none;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="validationIcon" style="font-size:20px;">✓</span>
+                    <div>
+                        <strong id="validationTitle">Format Detected</strong>
+                        <div id="validationMessage" style="font-size:12px; margin-top:4px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="convertBtn" onclick="processConversion()">Generate All Formats</button>
+            <button onclick="saveOutput()" id="saveBtn" disabled>Save All Outputs</button>
+            <button onclick="resetApp()">Reset</button>
+        </div>
+
+        <div id="manualSavePanel" class="save-panel hidden">
+            <h3>Complete Output Package</h3>
+            <p>Output folder: <span id="suggestedFolderName" class="mono-text">N/A</span></p>
+            <div class="save-file-list" style="grid-template-columns: 180px 1fr;">
+                <div><strong>Files to be created:</strong></div>
+                <div></div>
+                <div>JSON format:</div>
+                <div id="outputJsonPreview" class="mono-text">—</div>
+                <div>Text format:</div>
+                <div id="outputTextPreview" class="mono-text">—</div>
+                <div>Layout format:</div>
+                <div id="outputLayoutPreview" class="mono-text">—</div>
+                <div>HTML Layout:</div>
+                <div id="outputHtmlPreview" class="mono-text">—</div>
+                <div>Summary file:</div>
+                <div id="summaryFileNamePreview" class="mono-text">run_summary.json</div>
+            </div>
+            <div class="download-buttons">
+                <button type="button" id="downloadJsonBtn" class="secondary-btn" disabled>Download JSON</button>
+                <button type="button" id="downloadTextBtn" class="secondary-btn" disabled>Download Text</button>
+                <button type="button" id="downloadLayoutBtn" class="secondary-btn" disabled>Download Layout</button>
+                <button type="button" id="downloadHtmlBtn" class="secondary-btn" disabled>Download HTML</button>
+                <button type="button" id="downloadSummaryBtn" class="secondary-btn" disabled>Download Summary</button>
+            </div>
+            <p class="save-hint">
+                Click "Save Output" to create a complete folder with all formats, or download individual files using the buttons above.
+            </p>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </div>
+
+        <div class="status" id="statusMsg"></div>
+        <div class="error-box" id="errorBox">
+            <h3>Input issues detected</h3>
+            <ul id="errorList"></ul>
+        </div>
+
+        <div class="stats" id="statsContainer" style="display:none;">
+            <div class="stat-item">
+                <div class="stat-value" id="segmentCount">0</div>
+                <div class="stat-label">Segments</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="tokenCount">0</div>
+                <div class="stat-label">Total Tokens</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="commentCount">0</div>
+                <div class="stat-label">Comments</div>
+            </div>
+        </div>
+
+        <div class="config-section" style="margin-top: 25px;">
+            <div class="config-title">OUTPUT</div>
+            <div class="form-group">
+                <textarea id="outputText" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --------------------CONSTANTS & CONFIGURATIONS
+        const APP_NAME = "Text JSON Translation Format Converter";
+        const SUMMARY_FILE_NAME = 'run_summary.json';
+        const SEGMENT_PATTERN = /^\^(\d+)-(\d+)-(\d+)\s+(.*)$/;
+        const PUNCTUATION_PATTERN = /[.,;:!?()"\[\]{}]/g;
+        const TRANSLATION_STAGE_OPTIONS = [
+            '00 – Pre-Translation',
+            '01 – First Pass',
+            '02 – First Draft Review',
+            '03 – Context Revision',
+            '04 – Draft Review',
+            '05 – Target Revision',
+            '06 – Third Draft Review',
+            '07 – Indexing',
+            '08 – Copy Editing',
+            '09 – Final Draft Review',
+            '10 – Press Revision',
+            '11 – Final Pass',
+            '12 – Press Version'
+        ];
+        const SYMMETRIC_DELIMITERS = [
+            { symbol: '#', commentKey: 'general', prefix: '' },
+            { symbol: '$', commentKey: 'issue', prefix: '' },
+            { symbol: '~', commentKey: 'rationale', prefix: '' },
+            { symbol: '?', commentKey: 'general', prefix: '[Note] ' }
+        ];
+        const PAIRED_DELIMITER_TOKENS = [
+            { open: '!{', close: '}!', metaKey: 'updated_at' },
+            { open: '%{', close: '}%', metaKey: 'updated_by_id' },
+            { open: '&{', close: '}&', metaKey: 'status' }
+        ];
+        const INVALID_PATH_CHARS = /[<>:"/\\|?*\u0000-\u001F]/g;
+        const WINDOWS_RESERVED_NAMES = new Set([
+            'CON', 'PRN', 'AUX', 'NUL',
+            'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+            'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+        ]);
+        const PROGRESS_UPDATE_INTERVAL = 50;
+
+        let conversionInProgress = false;
+        let commentIdCounter = 0;
+        let inputIssues = [];
+        let currentOutput = null;
+        let currentOutputData = null;
+        let manualSaveInfo = null;
+        let detectedFormat = null;
+        let validationResult = null;
+        let allOutputs = {
+            json: null,
+            text: null,
+            layout: null,
+            html: null
+        };
+
+        function sanitizePathSegment(value, fallback = 'output') {
+            const raw = (value || '').toString();
+            let sanitized = raw
+                .replace(INVALID_PATH_CHARS, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .replace(/[. ]+$/g, '');
+            if (!sanitized) {
+                sanitized = fallback;
+            }
+            const upper = sanitized.toUpperCase();
+            if (WINDOWS_RESERVED_NAMES.has(upper)) {
+                sanitized = `${sanitized}_`;
+            }
+            return sanitized;
+        }
+
+        function buildSafeFileName(baseName, extension) {
+            const safeBase = sanitizePathSegment(baseName);
+            if (!extension) return safeBase;
+            const safeExtension = extension
+                .toString()
+                .toLowerCase()
+                .replace(INVALID_PATH_CHARS, '')
+                .replace(/\s+/g, '')
+                .replace(/[. ]+$/g, '') || 'txt';
+            return `${safeBase}.${safeExtension}`;
+        }
+
+        function detectInputFormat(text) {
+            if (!text || !text.trim()) {
+                return { format: null, valid: false, message: 'No input provided' };
+            }
+
+            const trimmed = text.trim();
+            
+            // Check for HTML layout format
+            if (trimmed.startsWith('<!DOCTYPE html>') || trimmed.startsWith('<html')) {
+                return { format: 'html-layout', valid: true, message: 'HTML Layout format detected' };
+            }
+
+            // Check for JSON format
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    if (parsed.translation_segments && Array.isArray(parsed.translation_segments)) {
+                        return { format: 'json', valid: true, message: 'JSON format detected - Valid structure' };
+                    }
+                    return { format: 'json', valid: false, message: 'JSON format detected but missing translation_segments array' };
+                } catch (e) {
+                    return { format: 'json', valid: false, message: `JSON format detected but invalid: ${e.message}` };
+                }
+            }
+
+            // Check for text format (segment lines starting with ^)
+            const lines = trimmed.split('\n');
+            let segmentCount = 0;
+            let hasYamlHeader = false;
+            let issues = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                if (line.startsWith('---')) {
+                    hasYamlHeader = true;
+                    continue;
+                }
+                
+                if (hasYamlHeader && /^[A-Za-z_][\w-]*:/.test(line)) {
+                    continue;
+                }
+                
+                if (line.startsWith('^')) {
+                    const match = line.match(SEGMENT_PATTERN);
+                    if (match) {
+                        segmentCount++;
+                        const content = match[4];
+                        if (!content.includes('<') || !content.includes('=')) {
+                            issues.push(`Line ${i + 1}: Missing translation block format`);
+                        }
+                    } else {
+                        issues.push(`Line ${i + 1}: Invalid segment format`);
+                    }
+                } else if (!hasYamlHeader && i < 10) {
+                    // Allow some non-segment lines at the start
+                    continue;
+                }
+            }
+
+            if (segmentCount > 0) {
+                if (issues.length === 0) {
+                    return { format: 'text', valid: true, message: `Text format detected - ${segmentCount} segments found` };
+                } else {
+                    return { format: 'text', valid: false, message: `Text format detected but has ${issues.length} issue(s). First: ${issues[0]}` };
+                }
+            }
+
+            // Check for layout format
+            if (trimmed.includes('>>>>>>>>>>[Page') || trimmed.includes('[P.') && trimmed.includes('B.')) {
+                return { format: 'layout', valid: true, message: 'Layout format detected' };
+            }
+
+            return { format: 'unknown', valid: false, message: 'Unable to detect format. Please check your input.' };
+        }
+
+        function validateInputFormat(text, format) {
+            clearInputIssues();
+            
+            if (!text || !text.trim()) {
+                return { valid: false, message: 'Input is empty', issues: [] };
+            }
+
+            if (format === 'json') {
+                try {
+                    const data = JSON.parse(text);
+                    if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                        return { valid: false, message: 'Missing translation_segments array', issues: ['Invalid JSON structure'] };
+                    }
+                    if (data.translation_segments.length === 0) {
+                        return { valid: false, message: 'No segments found', issues: ['translation_segments array is empty'] };
+                    }
+                    return { valid: true, message: `Valid JSON format with ${data.translation_segments.length} segments`, issues: [] };
+                } catch (e) {
+                    return { valid: false, message: `Invalid JSON: ${e.message}`, issues: [e.message] };
+                }
+            }
+
+            if (format === 'text') {
+                const lines = text.split('\n');
+                let segmentCount = 0;
+                let issues = [];
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    if (line.startsWith('---') || /^[A-Za-z_][\w-]*:/.test(line)) continue;
+                    if (!line.startsWith('^')) {
+                        if (i < 10) continue;
+                        addInputIssue('warning', i + 1, 'Line does not start with ^');
+                        continue;
+                    }
+
+                    const match = line.match(SEGMENT_PATTERN);
+                    if (!match) {
+                        addInputIssue('error', i + 1, 'Invalid segment format');
+                        issues.push(`Line ${i + 1}: Invalid segment format`);
+                        continue;
+                    }
+
+                    segmentCount++;
+                    const content = match[4];
+                    if (!content.includes('<') || !content.includes('=')) {
+                        addInputIssue('error', i + 1, 'Missing translation block');
+                        issues.push(`Line ${i + 1}: Missing translation block`);
+                    }
+                }
+
+                if (segmentCount === 0) {
+                    return { valid: false, message: 'No valid segments found', issues: ['No lines matching segment pattern'] };
+                }
+
+                if (issues.length > 0) {
+                    return { valid: false, message: `Found ${segmentCount} segments but ${issues.length} issue(s)`, issues };
+                }
+
+                return { valid: true, message: `Valid text format with ${segmentCount} segments`, issues: [] };
+            }
+
+            if (format === 'layout') {
+                if (!text.includes('>>>>>>>>>>[Page') && !text.includes('[P.')) {
+                    return { valid: false, message: 'Layout format markers not found', issues: ['Missing page markers'] };
+                }
+                return { valid: true, message: 'Layout format detected', issues: [] };
+            }
+
+            if (format === 'html-layout') {
+                if (!text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+                    return { valid: false, message: 'HTML format markers not found', issues: ['Missing HTML structure'] };
+                }
+                return { valid: true, message: 'HTML Layout format detected', issues: [] };
+            }
+
+            return { valid: false, message: 'Unknown format', issues: ['Cannot validate unknown format'] };
+        }
+
+        function validateInput() {
+            const text = document.getElementById('inputText').value.trim();
+            const validationStatus = document.getElementById('validationStatus');
+            
+            if (!text) {
+                validationStatus.style.display = 'none';
+                detectedFormat = null;
+                validationResult = null;
+                return;
+            }
+
+            const detection = detectInputFormat(text);
+            detectedFormat = detection.format;
+            
+            if (detection.format && detection.format !== 'unknown') {
+                const validation = validateInputFormat(text, detection.format);
+                validationResult = validation;
+                
+                validationStatus.style.display = 'block';
+                const icon = document.getElementById('validationIcon');
+                const title = document.getElementById('validationTitle');
+                const message = document.getElementById('validationMessage');
+                
+                if (validation.valid) {
+                    validationStatus.className = 'status success';
+                    icon.textContent = '✓';
+                    icon.style.color = '#155724';
+                    title.textContent = `Format: ${detection.format.toUpperCase()} - Valid`;
+                    message.textContent = validation.message;
+                } else {
+                    validationStatus.className = 'status error';
+                    icon.textContent = '✗';
+                    icon.style.color = '#721c24';
+                    title.textContent = `Format: ${detection.format.toUpperCase()} - Invalid`;
+                    message.textContent = validation.message;
+                }
+            } else {
+                validationStatus.style.display = 'block';
+                validationStatus.className = 'status warning';
+                const icon = document.getElementById('validationIcon');
+                const title = document.getElementById('validationTitle');
+                const message = document.getElementById('validationMessage');
+                icon.textContent = '?';
+                icon.style.color = '#856404';
+                title.textContent = 'Format: Unknown';
+                message.textContent = detection.message;
+            }
+        }
+
+        function clearInputIssues() {
+            inputIssues = [];
+            const box = document.getElementById('errorBox');
+            const list = document.getElementById('errorList');
+            if (box) box.style.display = 'none';
+            if (list) list.innerHTML = '';
+        }
+
+        function addInputIssue(level, lineNumber, message) {
+            inputIssues.push({ level, lineNumber, message });
+        }
+
+        function renderInputIssues() {
+            const box = document.getElementById('errorBox');
+            const list = document.getElementById('errorList');
+            if (!box || !list) return;
+            if (!inputIssues.length) {
+                box.style.display = 'none';
+                list.innerHTML = '';
+                return;
+            }
+            const items = inputIssues.map(issue => {
+                const safeMessage = escapeHtmlForOutput(issue.message || '');
+                const prefix = issue.lineNumber ? `Line ${issue.lineNumber}: ` : '';
+                return `<li class="${issue.level}">${prefix}${safeMessage}</li>`;
+            }).join('');
+            list.innerHTML = items;
+            box.style.display = 'block';
+        }
+
+        function generateCommentId(prefix) {
+            commentIdCounter += 1;
+            return `${prefix}-${Date.now()}-${commentIdCounter}`;
+        }
+
+        function createCommentObject(typeKey, text, parentId = '', authorId = 'system') {
+            const trimmed = (text || '').trim();
+            if (!trimmed) return null;
+            return {
+                comment_id: generateCommentId(`${typeKey}-comment`),
+                user_id: authorId || 'system',
+                created_at: new Date().toISOString(),
+                comment_text: trimmed,
+                parent_id: parentId || ''
+            };
+        }
+
+        function flattenCommentsForText(comments) {
+            if (!Array.isArray(comments) || !comments.length) return [];
+            
+            const nodes = comments.map(c => ({ ...c, children: [] }));
+            const nodeMap = new Map(nodes.map(n => [n.comment_id, n]));
+            const roots = [];
+            
+            nodes.forEach(node => {
+                const parentId = node.parent_id || '';
+                if (parentId && nodeMap.has(parentId)) {
+                    nodeMap.get(parentId).children.push(node);
+                } else {
+                    roots.push(node);
+                }
+            });
+            
+            roots.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            
+            const serialize = (node) => {
+                const parts = [`${node.user_id || 'unknown'}: ${node.comment_text || ''}`];
+                if (node.children?.length) {
+                    node.children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                    node.children.forEach(child => parts.push(serialize(child)));
+                }
+                return parts.join(' // ');
+            };
+            
+            return roots.map(serialize);
+        }
+
+        function populateMetadataFromJSON(data) {
+            if (!data.metadata) return;
+            
+            const titleField = document.getElementById('documentTitle');
+            if (!titleField.value.trim() && data.metadata.document_title) {
+                titleField.value = data.metadata.document_title;
+            }
+            
+            const sourceIdField = document.getElementById('sourceId');
+            if (!sourceIdField.value.trim() && data.metadata.source_id) {
+                sourceIdField.value = data.metadata.source_id;
+            }
+            
+            if (data.metadata.source_language_code) {
+                document.getElementById('sourceLang').value = data.metadata.source_language_code;
+            }
+            
+            if (data.metadata.target_language_code) {
+                document.getElementById('targetLang').value = data.metadata.target_language_code;
+            }
+            
+            if (data.metadata.translation_stage) {
+                document.getElementById('translationStage').value = data.metadata.translation_stage;
+            }
+        }
+
+        function populateStageOptions() {
+            const stageSelect = document.getElementById('translationStage');
+            if (!stageSelect) return;
+            const options = TRANSLATION_STAGE_OPTIONS
+                .map(stage => `<option value="${stage}">${stage}</option>`)
+                .join('');
+            stageSelect.innerHTML = `<option value="">Select stage</option>${options}`;
+        }
+
+        function getFormatName(direction) {
+            switch (direction) {
+                case 'json-to-text': return 'text';
+                case 'layout': return 'layout';
+                case 'html-layout': return 'html-layout';
+                default: return 'json';
+            }
+        }
+
+        function getOutputExtension(formatName) {
+            if (formatName === 'json') return 'json';
+            if (formatName === 'html-layout') return 'html';
+            return 'txt';
+        }
+
+        function getMimeTypeForExtension(extension) {
+            if (extension === 'json') return 'application/json';
+            if (extension === 'html') return 'text/html';
+            return 'text/plain';
+        }
+
+        function getTimestamp() {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const timestamp10 = `${yy}${mm}${dd}${hh}${min}`;
+            return { 
+                short: `${yy}${mm}${dd}`, 
+                long: timestamp10,
+                formatted: `[${timestamp10}]`
+            };
+        }
+
+        function buildSaveContext() {
+            if (!allOutputs.json || !currentOutputData) return null;
+            
+            const timestamp = getTimestamp();
+            const sourceIdInput = document.getElementById('sourceId').value.trim() || 'UNKN';
+            const documentTitleInput = document.getElementById('documentTitle').value.trim() || 'Untitled';
+            const sourceId = sanitizePathSegment(sourceIdInput, 'UNKN');
+            const documentTitle = sanitizePathSegment(documentTitleInput, 'Untitled');
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const fileStemRaw = `${timestamp.formatted} - ${sourceId} ${documentTitle} - ${sourceLang}-${targetLang} - all-formats`;
+            const fileStem = sanitizePathSegment(fileStemRaw, `${timestamp.formatted}_all-formats`);
+            const folderName = fileStem;
+            
+            const jsonFileName = buildSafeFileName(`${fileStem} - json`, 'json');
+            const textFileName = buildSafeFileName(`${fileStem} - text`, 'txt');
+            const layoutFileName = buildSafeFileName(`${fileStem} - layout`, 'txt');
+            const htmlFileName = buildSafeFileName(`${fileStem} - html-layout`, 'html');
+            
+            const summaryData = {
+                app_name: APP_NAME,
+                conversion_direction: 'all-formats',
+                timestamp: timestamp.formatted || timestamp.long,
+                timestamp_raw: timestamp.long,
+                output_folder: folderName,
+                statistics: currentOutputData?.stats || { segments: 0, tokens: 0, comments: 0 },
+                source_id: sourceIdInput,
+                document_title: documentTitleInput,
+                source_language: sourceLang,
+                target_language: targetLang,
+                output_files: {
+                    json: jsonFileName,
+                    text: textFileName,
+                    layout: layoutFileName,
+                    html: htmlFileName
+                }
+            };
+            
+            return {
+                folderName,
+                jsonFileName,
+                textFileName,
+                layoutFileName,
+                htmlFileName,
+                summaryContent: JSON.stringify(summaryData, null, 2),
+                summaryData,
+                timestamp
+            };
+        }
+
+        function toggleManualDownloadButtons(enabled) {
+            ['downloadJsonBtn', 'downloadTextBtn', 'downloadLayoutBtn', 'downloadHtmlBtn', 'downloadSummaryBtn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !enabled;
+            });
+        }
+
+        function updateManualSavePanel(context) {
+            const panel = document.getElementById('manualSavePanel');
+            const folderLabel = document.getElementById('suggestedFolderName');
+            const jsonLabel = document.getElementById('outputJsonPreview');
+            const textLabel = document.getElementById('outputTextPreview');
+            const layoutLabel = document.getElementById('outputLayoutPreview');
+            const htmlLabel = document.getElementById('outputHtmlPreview');
+            const summaryLabel = document.getElementById('summaryFileNamePreview');
+            
+            if (!panel || !folderLabel) return;
+
+            if (!allOutputs.json || !currentOutputData) {
+                panel.classList.add('hidden');
+                folderLabel.textContent = 'N/A';
+                if (jsonLabel) jsonLabel.textContent = '—';
+                if (textLabel) textLabel.textContent = '—';
+                if (layoutLabel) layoutLabel.textContent = '—';
+                if (htmlLabel) htmlLabel.textContent = '—';
+                if (summaryLabel) summaryLabel.textContent = SUMMARY_FILE_NAME;
+                toggleManualDownloadButtons(false);
+                manualSaveInfo = null;
+                return;
+            }
+
+            const info = context || buildSaveContext();
+            if (!info) return;
+
+            manualSaveInfo = info;
+            folderLabel.textContent = info.folderName;
+            if (jsonLabel) jsonLabel.textContent = info.jsonFileName;
+            if (textLabel) textLabel.textContent = info.textFileName;
+            if (layoutLabel) layoutLabel.textContent = info.layoutFileName;
+            if (htmlLabel) htmlLabel.textContent = info.htmlFileName;
+            if (summaryLabel) summaryLabel.textContent = SUMMARY_FILE_NAME;
+            panel.classList.remove('hidden');
+            toggleManualDownloadButtons(true);
+        }
+
+        function manualDownload(type, context = null, silent = false) {
+            if (!allOutputs.json || !currentOutputData) {
+                if (!silent) showStatus('Please run a conversion before downloading files.', 'error');
+                return;
+            }
+            
+            let info = context || manualSaveInfo;
+            if (!info) info = buildSaveContext();
+            if (!info) {
+                if (!silent) showStatus('Unable to prepare download. Please try again.', 'error');
+                return;
+            }
+
+            try {
+                if (type === 'json' && allOutputs.json) {
+                    downloadFile(allOutputs.json, info.jsonFileName, 'application/json');
+                    if (!silent) showStatus(`Downloading ${info.jsonFileName}`, 'info');
+                } else if (type === 'text' && allOutputs.text) {
+                    downloadFile(allOutputs.text, info.textFileName, 'text/plain');
+                    if (!silent) showStatus(`Downloading ${info.textFileName}`, 'info');
+                } else if (type === 'layout' && allOutputs.layout) {
+                    downloadFile(allOutputs.layout, info.layoutFileName, 'text/plain');
+                    if (!silent) showStatus(`Downloading ${info.layoutFileName}`, 'info');
+                } else if (type === 'html' && allOutputs.html) {
+                    downloadFile(allOutputs.html, info.htmlFileName, 'text/html');
+                    if (!silent) showStatus(`Downloading ${info.htmlFileName}`, 'info');
+                } else if (type === 'summary') {
+                    downloadFile(info.summaryContent, SUMMARY_FILE_NAME, 'application/json');
+                    if (!silent) showStatus('Downloading run_summary.json', 'info');
+                }
+            } catch (error) {
+                console.error('Manual download error:', error);
+                if (!silent) showStatus(`Download failed: ${error.message || 'Unknown error'}`, 'error');
+            }
+        }
+
+        function handleSaveMetadataChange() {
+            if (!currentOutput || !currentOutputData) return;
+            updateManualSavePanel();
+        }
+
+        function detectDocumentTitle(text, filename) {
+            if (filename) {
+                const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+                const cleaned = nameWithoutExt
+                    .replace(/[-_]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                if (cleaned && cleaned.length > 3 && cleaned.length < 100) {
+                    return cleaned;
+                }
+            }
+            
+            if (text) {
+                const lines = text.split('\n');
+                for (let line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed && 
+                        !trimmed.match(SEGMENT_PATTERN) && 
+                        trimmed.length > 5 && 
+                        trimmed.length < 150 &&
+                        !trimmed.startsWith('---') &&
+                        !trimmed.startsWith('```')) {
+                        return trimmed;
+                    }
+                }
+            }
+            
+            return '';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                document.getElementById('inputText').value = content;
+                
+                const titleField = document.getElementById('documentTitle');
+                if (!titleField.value.trim()) {
+                    const detectedTitle = detectDocumentTitle(content, file.name);
+                    if (detectedTitle) titleField.value = detectedTitle;
+                }
+                
+                const sourceIdField = document.getElementById('sourceId');
+                if (!sourceIdField.value.trim()) {
+                    const filenameBase = file.name.replace(/\.[^/.]+$/, "");
+                    const match = filenameBase.match(/\b([A-Z]{4})\b/);
+                    if (match) sourceIdField.value = match[1];
+                }
+                
+                validateInput();
+                showStatus('File loaded successfully', 'success');
+            };
+            reader.onerror = () => showStatus('Error reading file', 'error');
+            reader.readAsText(file);
+        }
+
+        function handlePaste(event) {
+            setTimeout(() => {
+                const text = document.getElementById('inputText').value;
+                const titleField = document.getElementById('documentTitle');
+                if (!titleField.value.trim() && text.trim()) {
+                    const detectedTitle = detectDocumentTitle(text, '');
+                    if (detectedTitle) titleField.value = detectedTitle;
+                }
+                validateInput();
+            }, 100);
+        }
+
+        function clearInput() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('fileInput').value = '';
+            showStatus('Input cleared', 'info');
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('statusMsg');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMsg').style.display = 'none';
+        }
+
+        function showProgress(percent, show = true) {
+            const container = document.getElementById('progressContainer');
+            const fill = document.getElementById('progressFill');
+            container.style.display = show ? 'block' : 'none';
+            fill.style.width = percent + '%';
+            fill.textContent = Math.round(percent) + '%';
+        }
+
+        function updateStats(segments, tokens, comments) {
+            document.getElementById('statsContainer').style.display = 'grid';
+            document.getElementById('segmentCount').textContent = segments;
+            document.getElementById('tokenCount').textContent = tokens;
+            document.getElementById('commentCount').textContent = comments;
+        }
+
+        function tokenizeText(text) {
+            return text.trim()
+                .replace(PUNCTUATION_PATTERN, ' ')
+                .split(/\s+/)
+                .filter(token => token.length > 0);
+        }
+
+        function parseSegmentLine(line, lineNumber) {
+            const match = line.match(SEGMENT_PATTERN);
+            if (!match) {
+                addInputIssue('error', lineNumber, 'Invalid segment signature. Expected "^page-block-segment <source = target>".');
+                return null;
+            }
+            const [, pageNum, blockNum, segNum, content] = match;
+            const translation = extractTranslationContent(content, lineNumber);
+            if (!translation) return null;
+            
+            return {
+                pageNum,
+                blockNum,
+                segNum,
+                sourceText: translation.sourceText,
+                targetText: translation.targetText,
+                annotationsText: translation.annotationsText
+            };
+        }
+
+        function extractTranslationContent(content, lineNumber) {
+            const start = content.indexOf('<');
+            if (start === -1) {
+                addInputIssue('error', lineNumber, 'Missing "<source = target>" block.');
+                return null;
+            }
+
+            let depth = 0;
+            let endIndex = -1;
+            for (let i = start; i < content.length; i++) {
+                if (content[i] === '<') depth += 1;
+                else if (content[i] === '>') {
+                    depth -= 1;
+                    if (depth === 0) {
+                        endIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            if (endIndex === -1) {
+                addInputIssue('error', lineNumber, 'Unclosed "<source = target>" block.');
+                return null;
+            }
+
+            const block = content.slice(start + 1, endIndex);
+            const equalsIndex = block.indexOf('=');
+            if (equalsIndex === -1) {
+                addInputIssue('error', lineNumber, 'Translation block must contain "=" between source and target.');
+                return null;
+            }
+
+            const sourceText = block.slice(0, equalsIndex).trim();
+            const targetText = block.slice(equalsIndex + 1).trim();
+
+            if (!sourceText && !targetText) {
+                addInputIssue('warning', lineNumber, 'Translation block is empty.');
+            }
+
+            const annotationsText = content.slice(endIndex + 1);
+            if (content.indexOf('<', endIndex + 1) !== -1) {
+                addInputIssue('warning', lineNumber, 'Multiple "<" detected after the main translation block; trailing data may be ignored.');
+            }
+
+            return { sourceText, targetText, annotationsText };
+        }
+
+        function parseAnnotations(annotationText, lineNumber) {
+            const annotations = {
+                general: [],
+                issue: [],
+                rationale: [],
+                meta: { updated_at: "", updated_by_id: "", status: "" },
+                hasError: false
+            };
+
+            if (!annotationText) return annotations;
+
+            let idx = 0;
+            const length = annotationText.length;
+
+            while (idx < length) {
+                const char = annotationText[idx];
+                if (/\s/.test(char)) {
+                    idx += 1;
+                    continue;
+                }
+
+                const symToken = SYMMETRIC_DELIMITERS.find(token => token.symbol === char);
+                if (symToken) {
+                    const closingIndex = annotationText.indexOf(symToken.symbol, idx + 1);
+                    if (closingIndex === -1) {
+                        addInputIssue('error', lineNumber, `Unclosed ${symToken.symbol} comment marker.`);
+                        annotations.hasError = true;
+                        return annotations;
+                    }
+                    const value = annotationText.slice(idx + 1, closingIndex).trim();
+                    if (value) {
+                        const formatted = symToken.prefix ? `${symToken.prefix}${value}` : value;
+                        annotations[symToken.commentKey].push(formatted);
+                    }
+                    idx = closingIndex + 1;
+                    continue;
+                }
+
+                const pairedToken = PAIRED_DELIMITER_TOKENS.find(token => annotationText.startsWith(token.open, idx));
+                if (pairedToken) {
+                    const closingIndex = annotationText.indexOf(pairedToken.close, idx + pairedToken.open.length);
+                    if (closingIndex === -1) {
+                        addInputIssue('error', lineNumber, `Unbalanced ${pairedToken.open}${pairedToken.close} tokens.`);
+                        annotations.hasError = true;
+                        return annotations;
+                    }
+                    const value = annotationText.slice(idx + pairedToken.open.length, closingIndex).trim();
+                    if (value && pairedToken.metaKey) {
+                        annotations.meta[pairedToken.metaKey] = value;
+                    }
+                    idx = closingIndex + pairedToken.close.length;
+                    continue;
+                }
+
+                idx += 1;
+            }
+
+            return annotations;
+        }
+
+        function parseTextToJSON(text) {
+            const lines = text.split('\n');
+            const sourceId = document.getElementById('sourceId').value.trim();
+            const documentTitle = document.getElementById('documentTitle').value.trim();
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const translationStage = document.getElementById('translationStage').value;
+
+            if (!sourceId || sourceId.length !== 4) {
+                throw new Error('Source ID must be exactly 4 characters');
+            }
+            if (!translationStage) {
+                throw new Error('Please select a translation stage before converting.');
+            }
+
+            const segments = [];
+            let totalTokens = 0;
+            let totalComments = 0;
+
+            for (let index = 0; index < lines.length; index++) {
+                if (index % PROGRESS_UPDATE_INTERVAL === 0) {
+                    showProgress(((index + 1) / lines.length) * 100);
+                }
+                
+                const rawLine = lines[index];
+                const trimmedLine = rawLine.trim();
+                const lineNumber = index + 1;
+                
+                if (!trimmedLine) continue;
+                if (trimmedLine.startsWith('---') || /^[A-Za-z_][\w-]*:/.test(trimmedLine)) continue;
+                if (!trimmedLine.startsWith('^')) {
+                    addInputIssue('error', lineNumber, 'Line ignored because it does not start with "^".');
+                    continue;
+                }
+
+                const parsedLine = parseSegmentLine(trimmedLine, lineNumber);
+                if (!parsedLine) continue;
+
+                const annotations = parseAnnotations(parsedLine.annotationsText, lineNumber);
+                if (annotations.hasError) continue;
+
+                const { pageNum, blockNum, segNum, sourceText, targetText } = parsedLine;
+                const segmentId = `${pageNum}-${blockNum}-${segNum}`;
+
+                const generalComments = annotations.general.map(text => createCommentObject('general', text)).filter(Boolean);
+                const issueComments = annotations.issue.map(text => createCommentObject('issue', text)).filter(Boolean);
+                const rationaleComments = annotations.rationale.map(text => createCommentObject('rationale', text)).filter(Boolean);
+
+                totalComments += generalComments.length + issueComments.length + rationaleComments.length;
+
+                const sourceTokens = tokenizeText(sourceText);
+                const targetTokens = tokenizeText(targetText);
+
+                const sourceTokensList = sourceTokens.map((token, idx) => ({
+                    token_id: `s${segmentId}-${idx + 1}`,
+                    "word-form_text": token,
+                    pos: '',
+                    ner: '',
+                    lemma: '',
+                    lexeme_id: '',
+                    sense: ''
+                }));
+
+                const targetTokensList = targetTokens.map((token, idx) => ({
+                    token_id: `t${segmentId}-${idx + 1}`,
+                    "word-form_text": token,
+                    pos: '',
+                    ner: '',
+                    lemma: '',
+                    lexeme_id: '',
+                    sense: ''
+                }));
+
+                totalTokens += sourceTokens.length + targetTokens.length;
+
+                const segmentObj = {
+                    segment_id: segmentId,
+                    page_number: parseInt(pageNum, 10),
+                    block_number: parseInt(blockNum, 10),
+                    segment_number: parseInt(segNum, 10),
+                    source_text: sourceText,
+                    source_tokens_list: sourceTokensList,
+                    target_text: targetText,
+                    target_tokens_list: targetTokensList,
+                    translation_mapping_list: [],
+                    comments: {
+                        general_comments: generalComments,
+                        rationale_comments: rationaleComments,
+                        issue_comments: issueComments
+                    }
+                };
+
+                const segmentMeta = annotations.meta || {};
+                const normalizedMeta = {
+                    updated_at: segmentMeta.updated_at || new Date().toISOString(),
+                    updated_by_id: segmentMeta.updated_by_id || '',
+                    status: segmentMeta.status || ''
+                };
+                if (normalizedMeta.updated_at || normalizedMeta.updated_by_id || normalizedMeta.status) {
+                    segmentObj.segment_meta = normalizedMeta;
+                }
+
+                segments.push(segmentObj);
+            }
+
+            showProgress(100);
+
+            return {
+                output: {
+                    metadata: {
+                        source_id: sourceId,
+                        document_title: documentTitle,
+                        source_language_code: sourceLang,
+                        target_language_code: targetLang,
+                        translation_stage: translationStage
+                    },
+                    translation_segments: segments
+                },
+                stats: {
+                    segments: segments.length,
+                    tokens: totalTokens,
+                    comments: totalComments
+                }
+            };
+        }
+
+        function parseJSONToText(jsonData) {
+            let data;
+            try {
+                data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+            } catch (e) {
+                throw new Error('Invalid JSON format');
+            }
+
+            if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                throw new Error('Invalid JSON structure: missing translation_segments array');
+            }
+
+            populateMetadataFromJSON(data);
+
+            let yamlHeader = '';
+            if (data.metadata) {
+                yamlHeader = '---\n';
+                yamlHeader += `source_id: "${data.metadata.source_id || ''}"\n`;
+                yamlHeader += `document_title: "${data.metadata.document_title || ''}"\n`;
+                yamlHeader += `source_language_code: "${data.metadata.source_language_code || ''}"\n`;
+                yamlHeader += `target_language_code: "${data.metadata.target_language_code || ''}"\n`;
+                yamlHeader += `translation_stage: "${data.metadata.translation_stage || ''}"\n`;
+                yamlHeader += `created_at: "${new Date().toISOString()}"\n`;
+                yamlHeader += '---\n\n';
+            }
+
+            const lines = [];
+            let totalTokens = 0;
+            let totalComments = 0;
+
+            for (let index = 0; index < data.translation_segments.length; index++) {
+                if (index % PROGRESS_UPDATE_INTERVAL === 0) {
+                    showProgress(((index + 1) / data.translation_segments.length) * 100);
+                }
+                
+                const segment = data.translation_segments[index];
+                let line = `^${segment.segment_id} <${segment.source_text || ''} = ${segment.target_text || ''}>`;
+
+                if (segment.comments) {
+                    const generalFlattened = flattenCommentsForText(segment.comments.general_comments);
+                    generalFlattened.forEach(comment => {
+                        line += ` #${comment}#`;
+                        totalComments++;
+                    });
+                    const issueFlattened = flattenCommentsForText(segment.comments.issue_comments);
+                    issueFlattened.forEach(comment => {
+                        line += ` $${comment}$`;
+                        totalComments++;
+                    });
+                    const rationaleFlattened = flattenCommentsForText(segment.comments.rationale_comments);
+                    rationaleFlattened.forEach(comment => {
+                        line += ` ~${comment}~`;
+                        totalComments++;
+                    });
+                }
+
+                if (segment.segment_meta) {
+                    if (segment.segment_meta.updated_at && segment.segment_meta.updated_at.trim()) {
+                        line += ` !{${segment.segment_meta.updated_at}}!`;
+                    }
+                    if (segment.segment_meta.updated_by_id && segment.segment_meta.updated_by_id.trim()) {
+                        line += ` %{${segment.segment_meta.updated_by_id}}%`;
+                    }
+                    if (segment.segment_meta.status && segment.segment_meta.status.trim()) {
+                        line += ` &{${segment.segment_meta.status}}&`;
+                    }
+                }
+
+                lines.push(line);
+
+                if (segment.source_tokens_list) totalTokens += segment.source_tokens_list.length;
+                if (segment.target_tokens_list) totalTokens += segment.target_tokens_list.length;
+            }
+
+            showProgress(100);
+
+            return {
+                output: yamlHeader + lines.join('\n'),
+                stats: {
+                    segments: data.translation_segments.length,
+                    tokens: totalTokens,
+                    comments: totalComments
+                }
+            };
+        }
+
+        function truncateText(text, firstWords = 5, lastWords = 5) {
+            const words = text.trim().split(/\s+/);
+            if (words.length <= firstWords + lastWords) return text;
+            const firstPart = words.slice(0, firstWords).join(' ');
+            const lastPart = words.slice(-lastWords).join(' ');
+            return `${firstPart} ... ${lastPart}`;
+        }
+
+        function parseToLayout(inputText) {
+            let data;
+            
+            try {
+                data = JSON.parse(inputText);
+            } catch (e) {
+                const textResult = parseTextToJSON(inputText);
+                data = textResult.output;
+            }
+
+            if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                throw new Error('Invalid data structure: missing translation_segments array');
+            }
+
+            populateMetadataFromJSON(data);
+
+            let yamlHeader = '';
+            if (data.metadata) {
+                yamlHeader = '---\n';
+                yamlHeader += `source_id: "${data.metadata.source_id || ''}"\n`;
+                yamlHeader += `document_title: "${data.metadata.document_title || ''}"\n`;
+                yamlHeader += `source_language_code: "${data.metadata.source_language_code || ''}"\n`;
+                yamlHeader += `target_language_code: "${data.metadata.target_language_code || ''}"\n`;
+                yamlHeader += `translation_stage: "${data.metadata.translation_stage || ''}"\n`;
+                yamlHeader += `created_at: "${new Date().toISOString()}"\n`;
+                yamlHeader += `format: "layout"\n`;
+                yamlHeader += '---\n\n';
+            }
+
+            const pageMap = {};
+            for (let i = 0; i < data.translation_segments.length; i++) {
+                if (i % PROGRESS_UPDATE_INTERVAL === 0) {
+                    showProgress(((i + 1) / data.translation_segments.length) * 50);
+                }
+                
+                const segment = data.translation_segments[i];
+                const pageNum = segment.page_number;
+                const blockNum = segment.block_number;
+
+                if (!pageMap[pageNum]) pageMap[pageNum] = {};
+                if (!pageMap[pageNum][blockNum]) pageMap[pageNum][blockNum] = [];
+
+                pageMap[pageNum][blockNum].push({
+                    source_text: segment.source_text || '',
+                    target_text: segment.target_text || ''
+                });
+            }
+
+            const lines = [];
+            const sortedPages = Object.keys(pageMap).sort((a, b) => parseInt(a) - parseInt(b));
+            let totalBlocks = 0;
+
+            for (let pageIdx = 0; pageIdx < sortedPages.length; pageIdx++) {
+                const progress = 50 + ((pageIdx + 1) / sortedPages.length) * 50;
+                showProgress(progress);
+                
+                const pageNum = sortedPages[pageIdx];
+                lines.push(`>>>>>>>>>>[Page ${pageNum}]<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<`);
+                lines.push('');
+
+                const blocks = pageMap[pageNum];
+                const sortedBlocks = Object.keys(blocks).sort((a, b) => parseInt(a) - parseInt(b));
+                totalBlocks += sortedBlocks.length;
+
+                for (let blockIdx = 0; blockIdx < sortedBlocks.length; blockIdx++) {
+                    const blockNum = sortedBlocks[blockIdx];
+                    const segments = blocks[blockNum];
+                    
+                    const sourceTexts = segments.map(seg => seg.source_text).filter(text => text.trim()).join(' ');
+                    const targetTexts = segments.map(seg => seg.target_text).filter(text => text.trim()).join(' ');
+
+                    if (sourceTexts) {
+                        const truncatedSource = truncateText(sourceTexts, 5, 5);
+                        lines.push(`\n[P.${pageNum} B.${blockNum}]----------<${truncatedSource}>`);
+                        lines.push('');
+                    }
+
+                    if (targetTexts) {
+                        lines.push(targetTexts);
+                        lines.push('');
+                    }
+                }
+            }
+
+            showProgress(100);
+
+            return {
+                output: yamlHeader + lines.join('\n'),
+                stats: {
+                    segments: data.translation_segments.length,
+                    tokens: 0,
+                    comments: 0
+                }
+            };
+        }
+
+        function escapeHtmlForOutput(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeJsString(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r')
+                .replace(/\t/g, '\\t')
+                .replace(/\f/g, '\\f');
+        }
+
+        function formatTextForHtml(text) {
+            if (!text) return '';
+            const escaped = escapeHtmlForOutput(text);
+            return escaped
+                .replace(/\n/g, '<br>')
+                .replace(/ {2,}/g, (match) => '&nbsp;'.repeat(match.length - 1) + ' ');
+        }
+
+        function parseToHtmlLayout(inputText) {
+            let data;
+            
+            try {
+                data = JSON.parse(inputText);
+            } catch (e) {
+                const textResult = parseTextToJSON(inputText);
+                data = textResult.output;
+            }
+
+            if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                throw new Error('Invalid data structure: missing translation_segments array');
+            }
+
+            populateMetadataFromJSON(data);
+
+            const pageMap = {};
+            for (let i = 0; i < data.translation_segments.length; i++) {
+                if (i % PROGRESS_UPDATE_INTERVAL === 0) {
+                    showProgress(((i + 1) / data.translation_segments.length) * 50);
+                }
+                
+                const segment = data.translation_segments[i];
+                const pageNum = segment.page_number;
+                const blockNum = segment.block_number;
+
+                if (!pageMap[pageNum]) pageMap[pageNum] = {};
+                if (!pageMap[pageNum][blockNum]) pageMap[pageNum][blockNum] = [];
+
+                pageMap[pageNum][blockNum].push({
+                    source_text: segment.source_text || '',
+                    target_text: segment.target_text || ''
+                });
+            }
+
+            const pages = Object.keys(pageMap).sort((a, b) => parseInt(a) - parseInt(b));
+            const metadata = data.metadata || {};
+            const pageNumbers = [];
+            const pagesHtmlParts = [];
+
+            for (let idx = 0; idx < pages.length; idx++) {
+                const progress = 50 + ((idx + 1) / pages.length) * 50;
+                showProgress(progress);
+                
+                const pageKey = pages[idx];
+                const pageNum = parseInt(pageKey, 10);
+                pageNumbers.push(pageNum);
+                const blocks = pageMap[pageKey];
+                const sortedBlocks = Object.keys(blocks).sort((a, b) => parseInt(a) - parseInt(b));
+
+                const blocksHtmlParts = [];
+                for (let blockIdx = 0; blockIdx < sortedBlocks.length; blockIdx++) {
+                    const blockNum = sortedBlocks[blockIdx];
+                    const segments = blocks[blockNum];
+                    const sourceTexts = segments.map(seg => seg.source_text || '').filter(text => text.trim()).join(' ');
+                    const targetTexts = segments.map(seg => seg.target_text || '').filter(text => text.trim()).join(' ');
+
+                    if (!sourceTexts && !targetTexts) continue;
+
+                    const sourceId = `source-${pageNum}-${blockNum}`;
+                    const targetId = `target-${pageNum}-${blockNum}`;
+                    const sourceEscaped = formatTextForHtml(sourceTexts || '');
+                    const targetEscaped = formatTextForHtml(targetTexts || '');
+                    const sourceIdEscaped = escapeJsString(sourceId);
+                    const targetIdEscaped = escapeJsString(targetId);
+                    const sourceOnclick = `copyText('${sourceIdEscaped}', event)`;
+                    const targetOnclick = `copyText('${targetIdEscaped}', event)`;
+                    blocksHtmlParts.push(
+                        `<tr><td class="source"><div class="block-header">Page ${escapeHtmlForOutput(String(pageNum))} Block ${escapeHtmlForOutput(String(blockNum))}</div><button class="copy-btn" onclick="${escapeHtmlForOutput(sourceOnclick)}">Copy</button><div class="text-content" id="${escapeHtmlForOutput(sourceId)}">${sourceEscaped || '&nbsp;'}</div></td><td class="target"><div class="block-header">Page ${escapeHtmlForOutput(String(pageNum))} Block ${escapeHtmlForOutput(String(blockNum))}</div><button class="copy-btn copy-btn-target" onclick="${escapeHtmlForOutput(targetOnclick)}">Copy</button><div class="text-content" id="${escapeHtmlForOutput(targetId)}">${targetEscaped || '&nbsp;'}</div></td></tr>`
+                    );
+                }
+
+                const pageClass = idx === 0 ? 'page active' : 'page';
+                const pageId = `page${pageNum}`;
+                const tableContent = blocksHtmlParts.length > 0 
+                    ? `<tbody>${blocksHtmlParts.join('')}</tbody>` 
+                    : '<tbody><tr><td colspan="2"><div class="text-content">No blocks on this page.</div></td></tr></tbody>';
+                pagesHtmlParts.push(`<div class="${escapeHtmlForOutput(pageClass)}" id="${escapeHtmlForOutput(pageId)}"><table>${tableContent}</table></div>`);
+            }
+
+            showProgress(100);
+
+            const totalPagesValue = pageNumbers.length || 1;
+            const pagesArrayValue = pageNumbers.length ? pageNumbers.join(',') : '1';
+            const pagesHtml = pagesHtmlParts.length ? pagesHtmlParts.join('') : '<div class="page active" id="page1"><div class="text-content">No layout content generated.</div></div>';
+
+            const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtmlForOutput(metadata.document_title || 'Translation Layout')}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; background: #f5f5f5; }
+        .header { background: #fff; border-bottom: 1px solid #ddd; padding: 12px 16px; font-size: 13px; color: #666; }
+        .header div { margin: 4px 0; }
+        .nav { background: #fff; border-bottom: 1px solid #ddd; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+        .nav button { padding: 6px 14px; font-size: 14px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; }
+        .nav button:hover { background: #f0f0f0; }
+        .nav input { width: 60px; padding: 6px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        .nav span { font-size: 14px; color: #666; }
+        .content { max-width: 100%; padding: 16px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        tr { border-bottom: 1px solid #eee; }
+        td { padding: 16px; vertical-align: top; width: 50%; }
+        .source { border-right: 1px solid #eee; background: #fafafa; }
+        .target { background: #fff; }
+        .block-header { font-size: 12px; color: #999; margin-bottom: 8px; }
+        .text-content { font-size: 15px; line-height: 1.7; color: #333; user-select: text; }
+        .copy-btn { padding: 4px 10px; font-size: 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; float: right; margin-top: -2px; }
+        .copy-btn:hover { background: #e0e0e0; }
+        .copy-btn-target { background: #007bff; color: #fff; border-color: #0056b3; }
+        .copy-btn-target:hover { background: #0056b3; }
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div><strong>Source ID:</strong> ${escapeHtmlForOutput(metadata.source_id || '')}</div>
+        <div><strong>Document Title:</strong> ${escapeHtmlForOutput(metadata.document_title || '')}</div>
+        <div><strong>Languages:</strong> ${escapeHtmlForOutput(metadata.source_language_code || '')} → ${escapeHtmlForOutput(metadata.target_language_code || '')}</div>
+        <div><strong>Stage:</strong> ${escapeHtmlForOutput(metadata.translation_stage || '')}</div>
+        <div><strong>Created At:</strong> ${escapeHtmlForOutput(new Date().toISOString())}</div>
+    </div>
+    <div class="nav">
+        <button onclick="prevPage()">← Prev</button>
+        <button onclick="nextPage()">Next →</button>
+        <span>Page</span>
+        <input type="number" id="pageInput" min="1" max="${totalPagesValue}" value="1" onchange="goToPage(parseInt(this.value))">
+        <span>of ${totalPagesValue}</span>
+    </div>
+    <div class="content">
+        ${pagesHtml}
+    </div>
+    <script>
+        let currentPage = 1;
+        const totalPages = ${totalPagesValue};
+        const pages = [${pagesArrayValue}];
+        
+        function showPage(pageIndex) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const pageNum = pages[pageIndex - 1];
+            const page = document.getElementById('page' + pageNum);
+            if (page) {
+                page.classList.add('active');
+                document.getElementById('pageInput').value = pageIndex;
+            }
+        }
+        
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        }
+        
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        }
+        
+        function goToPage(pageNum) {
+            if (pageNum >= 1 && pageNum <= totalPages) {
+                currentPage = pageNum;
+                showPage(currentPage);
+            }
+        }
+        
+        function copyText(id, event) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const text = el.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event ? event.target : null;
+                if (btn && btn.tagName === 'BUTTON') {
+                    const original = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = original, 1000);
+                }
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            });
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'ArrowRight') nextPage();
+        });
+        
+        showPage(currentPage);
+    <\/script>
+</body>
+</html>`;
+
+            return {
+                output: htmlContent,
+                stats: {
+                    segments: data.translation_segments.length,
+                    tokens: 0,
+                    comments: 0
+                }
+            };
+        }
+
+        function normalizeToJSON(inputText) {
+            let data;
+            
+            try {
+                data = JSON.parse(inputText);
+            } catch (e) {
+                const textResult = parseTextToJSON(inputText);
+                data = textResult.output;
+            }
+
+            if (!data.translation_segments || !Array.isArray(data.translation_segments)) {
+                throw new Error('Invalid data structure: missing translation_segments array');
+            }
+
+            return data;
+        }
+
+        async function processConversion() {
+            if (conversionInProgress) {
+                showStatus('A conversion is already in progress. Please wait.', 'info');
+                return;
+            }
+
+            if (!detectedFormat || !validationResult || !validationResult.valid) {
+                showStatus('Please ensure input is valid before converting. Check validation status above.', 'error');
+                return;
+            }
+
+            hideStatus();
+            showProgress(0, true);
+            clearInputIssues();
+
+            const inputText = document.getElementById('inputText').value.trim();
+
+            if (!inputText) {
+                showStatus('Please provide input text or load a file', 'error');
+                showProgress(0, false);
+                return;
+            }
+
+            const convertBtn = document.getElementById('convertBtn');
+            if (convertBtn && !convertBtn.dataset.originalText) {
+                convertBtn.dataset.originalText = convertBtn.textContent;
+            }
+            if (convertBtn) {
+                convertBtn.disabled = true;
+                convertBtn.textContent = 'Generating all formats...';
+            }
+
+            conversionInProgress = true;
+
+            try {
+                showProgress(10);
+                const normalizedData = normalizeToJSON(inputText);
+                populateMetadataFromJSON(normalizedData);
+
+                showProgress(30);
+                const jsonOutput = JSON.stringify(normalizedData, null, 2);
+                allOutputs.json = jsonOutput;
+
+                showProgress(50);
+                const textResult = parseJSONToText(JSON.stringify(normalizedData));
+                allOutputs.text = textResult.output;
+
+                showProgress(70);
+                const layoutResult = parseToLayout(JSON.stringify(normalizedData));
+                allOutputs.layout = layoutResult.output;
+
+                showProgress(90);
+                const htmlResult = parseToHtmlLayout(JSON.stringify(normalizedData));
+                allOutputs.html = htmlResult.output;
+
+                const stats = textResult.stats || { segments: 0, tokens: 0, comments: 0 };
+                currentOutputData = { stats };
+                currentOutput = jsonOutput;
+                document.getElementById('outputText').value = jsonOutput;
+                updateStats(stats.segments, stats.tokens, stats.comments);
+
+                updateManualSavePanel();
+                const saveBtn = document.getElementById('saveBtn');
+                if (saveBtn) saveBtn.disabled = false;
+
+                showStatus(`Conversion completed successfully! Generated all 4 formats with ${stats.segments} segments.`, 'success');
+                showProgress(100, true);
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error(error);
+                allOutputs = { json: null, text: null, layout: null, html: null };
+            } finally {
+                conversionInProgress = false;
+                setTimeout(() => showProgress(0, false), 300);
+                if (convertBtn) {
+                    convertBtn.disabled = false;
+                    convertBtn.textContent = convertBtn.dataset.originalText || 'Convert';
+                }
+                renderInputIssues();
+            }
+        }
+
+        async function saveOutput() {
+            if (!allOutputs.json || !currentOutputData) {
+                showStatus('No output to save', 'error');
+                return;
+            }
+
+            const saveContext = buildSaveContext();
+            if (!saveContext) {
+                showStatus('Unable to build save context', 'error');
+                return;
+            }
+            manualSaveInfo = saveContext;
+            updateManualSavePanel(saveContext);
+
+            if ('showDirectoryPicker' in window) {
+                try {
+                    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    const folderHandle = await dirHandle.getDirectoryHandle(saveContext.folderName, { create: true });
+                    
+                    const files = [
+                        { content: allOutputs.json, name: saveContext.jsonFileName, type: 'application/json' },
+                        { content: allOutputs.text, name: saveContext.textFileName, type: 'text/plain' },
+                        { content: allOutputs.layout, name: saveContext.layoutFileName, type: 'text/plain' },
+                        { content: allOutputs.html, name: saveContext.htmlFileName, type: 'text/html' },
+                        { content: saveContext.summaryContent, name: SUMMARY_FILE_NAME, type: 'application/json' }
+                    ];
+
+                    for (const file of files) {
+                        const fileHandle = await folderHandle.getFileHandle(file.name, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(file.content);
+                        await writable.close();
+                    }
+
+                    showStatus(`All files saved successfully to folder: ${saveContext.folderName}`, 'success');
+                } catch (error) {
+                    if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
+                        showStatus('Save cancelled or permission denied', 'info');
+                        fallbackSave(saveContext);
+                    } else {
+                        console.error('Save error:', error);
+                        showStatus(`Save failed: ${error.message || 'Unknown error'}. Using download fallback.`, 'error');
+                        fallbackSave(saveContext);
+                    }
+                }
+            } else {
+                fallbackSave(saveContext);
+            }
+        }
+
+        function fallbackSave(saveContext) {
+            if (!saveContext) {
+                showStatus('Save context unavailable', 'error');
+                return;
+            }
+            showStatus(`Automatic folder selection is unavailable. Downloading files instead. If your browser blocks downloads, use the manual download buttons below.`, 'info');
+            updateManualSavePanel(saveContext);
+            
+            const delays = [300, 600, 900, 1200, 1500];
+            const types = ['json', 'text', 'layout', 'html', 'summary'];
+            
+            types.forEach((type, index) => {
+                setTimeout(() => {
+                    try {
+                        manualDownload(type, saveContext, true);
+                    } catch (error) {
+                        console.error(`Error downloading ${type} file:`, error);
+                    }
+                }, delays[index]);
+            });
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            if (!content) {
+                console.error('No content to download');
+                showStatus('Error: No content to download', 'error');
+                return;
+            }
+            
+            try {
+                const contentString = typeof content === 'string' ? content : String(content);
+                const blobOptions = { type: mimeType || 'text/plain' };
+                if (mimeType && (mimeType.includes('html') || mimeType.includes('text'))) {
+                    blobOptions.type += ';charset=utf-8';
+                }
+                const blob = new Blob([contentString], blobOptions);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || 'download';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            } catch (error) {
+                console.error('Error downloading file:', error);
+                showStatus(`Download failed: ${error.message || 'Unknown error'}`, 'error');
+                throw error;
+            }
+        }
+
+        function resetApp() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('documentTitle').value = '';
+            document.getElementById('translationStage').value = '';
+            document.getElementById('saveBtn').disabled = true;
+            document.getElementById('statsContainer').style.display = 'none';
+            document.getElementById('validationStatus').style.display = 'none';
+            currentOutput = null;
+            currentOutputData = null;
+            manualSaveInfo = null;
+            detectedFormat = null;
+            validationResult = null;
+            allOutputs = { json: null, text: null, layout: null, html: null };
+            updateManualSavePanel();
+            hideStatus();
+            showProgress(0, false);
+            clearInputIssues();
+        }
+
+        // --------------------MAIN APPLICATION
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        populateStageOptions();
+
+        const manualSaveInputs = ['sourceId', 'documentTitle'];
+        manualSaveInputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.addEventListener('input', handleSaveMetadataChange);
+        });
+
+        ['sourceLang', 'targetLang'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select) select.addEventListener('change', handleSaveMetadataChange);
+        });
+
+        const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+        if (downloadJsonBtn) {
+            downloadJsonBtn.addEventListener('click', () => manualDownload('json'));
+        }
+        const downloadTextBtn = document.getElementById('downloadTextBtn');
+        if (downloadTextBtn) {
+            downloadTextBtn.addEventListener('click', () => manualDownload('text'));
+        }
+        const downloadLayoutBtn = document.getElementById('downloadLayoutBtn');
+        if (downloadLayoutBtn) {
+            downloadLayoutBtn.addEventListener('click', () => manualDownload('layout'));
+        }
+        const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+        if (downloadHtmlBtn) {
+            downloadHtmlBtn.addEventListener('click', () => manualDownload('html'));
+        }
+        const downloadSummaryBtn = document.getElementById('downloadSummaryBtn');
+        if (downloadSummaryBtn) {
+            downloadSummaryBtn.addEventListener('click', () => manualDownload('summary'));
+        }
+    </script>
+</body>
+</html>
