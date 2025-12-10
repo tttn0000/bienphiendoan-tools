@@ -1,7 +1,7 @@
 # Sync to GitHub Script
 # Syncs this folder to: https://github.com/tttn0000/bienphiendoan-tools
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 $repoUrl = "https://github.com/tttn0000/bienphiendoan-tools.git"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
@@ -13,6 +13,7 @@ try {
    if (-not (Test-Path ".git")) {
       Write-Host "Initializing git repository..." -ForegroundColor Cyan
       git init
+      if ($LASTEXITCODE -ne 0) { throw "Failed to initialize git" }
       git branch -M main
         
       # Add remote
@@ -38,16 +39,6 @@ try {
       }
    }
 
-   # Pull latest changes first (if repo exists remotely)
-   Write-Host "`nAttempting to pull latest changes..." -ForegroundColor Cyan
-   try {
-      git fetch origin main 2>$null
-      git pull origin main --allow-unrelated-histories 2>$null
-   }
-   catch {
-      Write-Host "No existing remote content to pull (new repository)" -ForegroundColor Yellow
-   }
-
    # Stage all changes
    Write-Host "`nStaging changes..." -ForegroundColor Cyan
    git add -A
@@ -65,12 +56,14 @@ try {
       # Commit
       Write-Host "`nCommitting changes..." -ForegroundColor Cyan
       git commit -m $commitMessage
+      if ($LASTEXITCODE -ne 0) { throw "Failed to commit" }
 
-      # Push
+      # Push with force (local is source of truth for sync)
       Write-Host "`nPushing to GitHub..." -ForegroundColor Cyan
-      git push -u origin main
+      git push -u origin main --force
+      if ($LASTEXITCODE -ne 0) { throw "Failed to push to GitHub" }
 
-      Write-Host "`n✓ Successfully synced to GitHub!" -ForegroundColor Green
+      Write-Host "`n[OK] Successfully synced to GitHub!" -ForegroundColor Green
    }
    else {
       Write-Host "`nNo changes to commit. Repository is up to date." -ForegroundColor Green
@@ -78,12 +71,13 @@ try {
 
 }
 catch {
-   Write-Host "`n✗ Error: $_" -ForegroundColor Red
+   Write-Host "`n[ERROR] $_" -ForegroundColor Red
+   Pop-Location
+   Write-Host "`nPress any key to exit..."
+   $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
    exit 1
 }
-finally {
-   Pop-Location
-}
 
+Pop-Location
 Write-Host "`nPress any key to exit..."
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
